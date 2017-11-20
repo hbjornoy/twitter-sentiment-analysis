@@ -1,3 +1,8 @@
+# datafiles that are to big
+train_neg_full.txt
+train_pos_full.txt
+
+# MAC
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
