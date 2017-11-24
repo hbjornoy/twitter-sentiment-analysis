@@ -2,23 +2,77 @@ import os
 from gensim import corpora
 from nltk.stem import PorterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
+import numpy as np
+import pickle 
 
-ps = PorterStemmer()
 
-def stopAndStem(inputfile, outputfile):
-    #loading the data file: 
-    with open(inputfile) as f:
-        documents = [ line.strip( ) for line in list(f) ]
-    #Defining stoplist:   
-    stoplist = set('for a of the and to in is i <user> <url> !'.split())
-    #removing stopwords: 
-    texts = [[word for word in document.lower().split() if word not in stoplist]
-         for document in documents]
-    #stemming:
-    texts=[[ps.stem(word) for word in sentence ]for sentence in texts]
-    file = open(outputfile,'w')  
- 
-    for i in range(len(texts)):
-        file.write(' '.join(texts[i]) + '\n' )
+def remove_stopwords(corpus, custom_stop_words):
+    """
+    denne ble stygg as fuck, men vet ikke helt om jeg får den penere... 
+    """
     
-    file.close()
+    new_corpus=[]
+    for line in corpus:
+        words=line.decode("utf-8")#.split(" ")
+        words = ''.join(words.rsplit('\n', 1))
+        words=words.lower().split(" ")
+        new_words=[]
+        for word in words: 
+            if word not in custom_stop_words:
+                new_words.append(word)
+               
+            
+        new_words = ' '.join(new_words)
+        new_words = new_words.encode('utf-8')
+        new_corpus.append(new_words) 
+    return new_corpus
+
+def create_dictionary(cluster_file):
+    """ 
+    Input: 
+    cluster_file: name of the file that contains the information about the clusters. The function assums that the file 
+    is structures exactly as the file 50mpaths2.txt which can be dowloaded from 
+    "http://www.cs.cmu.edu/~ark/TweetNLP/#parser_down". 
+    
+    Output: a dictionary, with words as key and cluster-id as value. 
+    """
+    cluster_dictionary = {}
+    with open(cluster_file,'rb') as infile:
+        for line in infile:
+            # decode from Bytes too string
+            string = line.decode("utf-8")
+            # because there are words with '\n' in it we must just remove the last occurence ex: 101011\tarm\n\t42
+            string = ''.join(string.rsplit('\n', 1))
+            # because of cases where the word contains '\t' we must just remove the first and last '\t' ex: "11010101\t\t\t42"
+            string = string.split('\t',1)
+            split_last_part = string[1].rsplit('\t', 1)
+            string[1] = split_last_part[0]
+            string.append(split_last_part[1])
+            #setting the word as key in dictionary and the cluster-id as value.
+            cluster_dictionary.update({string[1]:string[0]})
+            #pickle.dump(cluster_dictionary, open( "cluster_dictionary.pkl", "wb" ) )
+    return cluster_dictionary 
+
+def create_clusterized_corpus(corpus, cluster_dictionary):
+    """ 
+    Input: 
+        corpus: a corpus as created by create_coprus 
+        cluster_dictionary: A dictionary created using the function creat_dictionary. 
+    Output: 
+        new_corpus: A new corpus on the same format as the original one, where all words in the dictionary are replaced
+        by the cluster id. 
+    """
+    new_corpus=[]
+    for line in corpus:
+        words=line.decode("utf-8")#.split(" ")
+        words = ''.join(words.rsplit('\n', 1))
+        words=words.split(" ")
+        for i,word in enumerate(words) : 
+            value=cluster_dictionary.get(word)
+            if value is not None:
+                words[i]=value
+        words = ' '.join(words)
+        words = words.encode('utf-8')
+        new_corpus.append(words) 
+    return new_corpus
+    
