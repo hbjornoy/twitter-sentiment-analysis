@@ -22,7 +22,7 @@ def create_corpus(inputfiles):
                     
     return corpus, file_lengths
 
-def create_labels(nr_pos_lines,nr_neg_lines):
+def create_labels(nr_pos_lines,nr_neg_lines,kaggle=False):
     """
     Input: 
         nr_pos_lines: Number tweets from positive training data
@@ -34,7 +34,10 @@ def create_labels(nr_pos_lines,nr_neg_lines):
     nr_lines_total=nr_pos_lines+nr_neg_lines
     labels = np.zeros(nr_lines_total);
     labels[0:nr_pos_lines]=1;
-    labels[nr_pos_lines:nr_lines_total]=0;
+    if kaggle:
+        labels[nr_pos_lines:nr_lines_total]=-1; 
+    else:
+        labels[nr_pos_lines:nr_lines_total]=0;
     return labels
 
 
