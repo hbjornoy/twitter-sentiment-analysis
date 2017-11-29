@@ -4,7 +4,7 @@
 
 Download gensim through pip ( python package manager ), make sure to run with administrator privleges. 
 
-'pip install --upgrade gensim' 
+`pip install --upgrade gensim`
 
 
 
