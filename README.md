@@ -5,11 +5,7 @@
 Download gensim through pip ( python package manager ), make sure to run with administrator privleges. 
 
 `pip install --upgrade gensim`
-
-
-
-
-
+`conda install -c conda-forge keras tensorflow` 
 
 
 # Project Text Sentiment Classification
