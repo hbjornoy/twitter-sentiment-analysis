@@ -1,0 +1,9 @@
+- sjekke om vi fjerner negation clusters- hvor vanlig er de? 
+
+- sjekke om vi kan sette alle negations til samme cluster (cant=not, wont=not osv)?
+
+- prøve med stemming i stedet for cluster 
+
+- prøve begge metoder på alle varianter av preprocessed data- for å ha noe å snakke om i rapport
+
+- http://ceur-ws.org/Vol-1748/paper-06.pdf
