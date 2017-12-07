@@ -45,7 +45,7 @@ def preprocess_corpus(corpus,stemming=False,
 
     #Want to split the tweets using this tokenizer:
     tknzr = TweetTokenizer(reduce_len=True)
-    
+    ps = PorterStemmer()
     #Want to go though each line (tweet) in the corpus
     for line in corpus:
         
