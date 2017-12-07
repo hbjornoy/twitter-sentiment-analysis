@@ -10,7 +10,7 @@ def replace_words(corpus):
     new_corpus=[]
     new_corpus_string=[]
     
-    tknzr = TweetTokenizer()
+    tknzr = TweetTokenizer(reduce_len=True)
     ps = PorterStemmer()
     
     
