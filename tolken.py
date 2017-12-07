@@ -5,6 +5,7 @@ import nltk
 from nltk.stem import PorterStemmer
 
 from nltk.tokenize import TweetTokenizer
+
 def replace_words(corpus):
     
     new_corpus=[]
@@ -13,10 +14,9 @@ def replace_words(corpus):
     tknzr = TweetTokenizer()
     ps = PorterStemmer()
     
-    
-    
     for line in corpus:
         words=tknzr.tokenize(line)
+        
         exclamation=False
         hashtag=False
         number=False
@@ -79,7 +79,6 @@ def replace_words(corpus):
             elif i>0 and word=='d' and (words[i-1]==':' or words[i-1]==';' or words[i-1]=='x'):
                 cleaned_tweet.append('possmiley')
         
-        
             elif (word!= '^' and word!=',' and word!='.' and word!=':' and word!='-' and word!='´' and word!=';'
                  and word!=')' and word!='(' and word!='*'):
             
@@ -97,6 +96,7 @@ def replace_words(corpus):
         new_words = ' '.join(cleaned_tweet)
         new_words = new_words.encode('utf-8')
         new_corpus.append(new_words)
+        
     return new_corpus
 
 
