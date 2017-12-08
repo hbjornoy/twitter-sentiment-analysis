@@ -73,9 +73,12 @@ def create_labels(total_training_tweets, nr_pos_tweets):
 
 
 def run_k_fold(models, X, Y, epochs, n_folds, seed):
+    
+    #tried some shit that i dont think work...
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
+    
     for neural_model in models:
 
         model_name = neural_model.__name__
@@ -152,6 +155,19 @@ def method1(path_to_gensim_global_vectors, processed_corpus, total_training_twee
 
 
 def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name):
+    """
+    Input: 
+    neural_net: Name of a neural net model 
+    global_vectors: global vectors created out the gensim-.txt files. 
+    total_training_tweets: (int) Number of tweets that are training tweets. Assums that the first poriton of the corpus is
+    training tweets, the second part is the unseen test set. 
+    nr_pos_tweets: (int) number of traning tweets that are positiv
+    kaggle_name: Name for csv file, must end in '.csv'. 
+    
+    Output: 
+    pred_ones: the predicions (1 or -1) 
+    - a .csv file with name 'kaggle_name' 
+    """
     num_of_dim = global_vectors.syn0.shape[1]
     # seperate traindata and testdata
     train_corpus = full_corpus[:total_training_tweets:] 
