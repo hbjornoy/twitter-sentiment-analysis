@@ -64,6 +64,7 @@ def deep_HB(input_dimensions):
     model.add(Dense(20, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(40, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
+    #følgende setning hjalp ikke med å få likt resultat hver gang og gir dååårlig resultat
     #model.add(Dense(1,kernel_initializer='random_uniform', bias_initializer='zeros'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
