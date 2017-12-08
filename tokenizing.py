@@ -13,7 +13,9 @@ def preprocess_corpus(corpus,stemming=False,
                       hashtag=False, hashtag_mention=False, 
                       numbers=False, number_mention=False, 
                       exclamation=False,
-                      set_to_not=False
+                      set_to_not=False,
+                      
+                      
                       
                       ):
     """
@@ -46,6 +48,8 @@ def preprocess_corpus(corpus,stemming=False,
     #Want to split the tweets using this tokenizer:
     tknzr = TweetTokenizer(reduce_len=True)
     ps = PorterStemmer()
+
+    
     #Want to go though each line (tweet) in the corpus
     for line in corpus:
         
@@ -139,6 +143,7 @@ def preprocess_corpus(corpus,stemming=False,
                 if word[-3:]=='n\'t':
                     cleaned_tweet.append('not')
                     word_not_treated=False
+           
             
          
             if (word_not_treated and word!= '^' and word!=',' and word!='.' and word!=':' and word!='-' and word!='´'
