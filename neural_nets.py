@@ -2,8 +2,12 @@ import sklearn as sk
 import keras
 from keras.layers import *
 from keras.layers.core import *
+import tensorflow as tf
+import random as rn
+from keras import backend as K
 
 def basic_model(input_dimensions):
+    
     model = keras.models.Sequential()
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
@@ -47,6 +51,11 @@ def deep_2_model(input_dimensions):
 
 
 def deep_HB(input_dimensions):
+    rn.seed(7)
+    tf.set_random_seed(7)
+    session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
+    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
+    K.set_session(sess)
     model = keras.models.Sequential()
     model.add(Dense(150, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
@@ -55,6 +64,7 @@ def deep_HB(input_dimensions):
     model.add(Dense(20, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(40, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
+    #model.add(Dense(1,kernel_initializer='random_uniform', bias_initializer='zeros'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
 

@@ -15,8 +15,8 @@ from sklearn.model_selection import StratifiedKFold
 
 
 def gridsearch(corpus,labels,nr_lines_total):
-    min_df_list = list(range(4,13))
-    max_df_list = np.linspace(0.1, 2.0, num=15)
+    min_df_list = list(range(5,13))
+    max_df_list = np.linspace(0.5, 1.6, num=10)
 
     scores = []
     best_score = 0
@@ -42,7 +42,7 @@ def gridsearch(corpus,labels,nr_lines_total):
                     min_df = min_df, # removing word that occure less then X times 
                     max_df = max_df, # remove words that are too frequent ( more then 0.8 * number of files )
                     sublinear_tf=True, # scale the term frequency in logarithmic scale
-                    use_idf =True
+                    use_idf =False
                     #stop_words = 'english', # Removing stop-words
                 )
 

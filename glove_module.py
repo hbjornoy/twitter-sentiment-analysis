@@ -5,6 +5,14 @@ import sklearn as sk
 import numpy as np
 import keras
 import neural_nets as NN
+import tensorflow as tf
+import random as rn
+from keras import backend as K
+
+import helpers as HL 
+np.random.seed(7)
+rn.seed(7)
+tf.set_random_seed(7)
 
 
 def create_gensim_word2vec_file(path_to_original_glove_file):
@@ -65,6 +73,9 @@ def create_labels(total_training_tweets, nr_pos_tweets):
 
 
 def run_k_fold(models, X, Y, epochs, n_folds, seed):
+    session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
+    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
+    K.set_session(sess)
     for neural_model in models:
 
         model_name = neural_model.__name__
@@ -114,8 +125,8 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
     num_of_dim = global_vectors.syn0.shape[1]
 
     # seperate traindata and testdata
-    train_corpus = processed_corpus[:total_training_tweets:]
-    predict_corpus = processed_corpus[total_training_tweets::]
+    train_corpus = processed_corpus[:total_training_tweets:] 
+    predict_corpus = processed_corpus[total_training_tweets::] 
 
     # Build a vector of all the words in a tweet
     train_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
@@ -139,5 +150,41 @@ def method1(path_to_gensim_global_vectors, processed_corpus, total_training_twee
     classify_with_neural_networks(neural_nets, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets)
 
 
+
+def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name):
+    num_of_dim = global_vectors.syn0.shape[1]
+    # seperate traindata and testdata
+    train_corpus = full_corpus[:total_training_tweets:] 
+    predict_corpus = full_corpus[total_training_tweets::] 
+    # Build a vector of all the words in a tweet
+    train_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
+    train_document_vecs = sk.preprocessing.scale(train_document_vecs)
+    
+    test_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
+    test_document_vecs = sk.preprocessing.scale(test_document_vecs)
+
+    labels = create_labels(total_training_tweets, nr_pos_tweets)
+    
+    model_name = neural_net.__name__
+    
+    model = neural_net(num_of_dim)
+    
+    early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+
+    model.fit(train_document_vecs, labels, epochs=10, batch_size=1024, verbose=0, callbacks=[early_stopping])
+    pred=model.predict(test_document_vecs)
+    
+    pred_ones=[]
+    for i in pred:
+        if i> 0.5:
+            pred_ones.append(1)
+        else:
+            pred_ones.append(-1)
+            
+    #CREATING SUBMISSION
+    ids = list(range(1,10000+1))
+    HL.create_csv_submission(ids, pred_ones,kaggle_name)
+
+    return pred_ones
 
 
