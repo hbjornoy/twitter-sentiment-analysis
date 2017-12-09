@@ -13,10 +13,7 @@ def preprocess_corpus(corpus,stemming=False,
                       hashtag=False, hashtag_mention=False, 
                       numbers=False, number_mention=False, 
                       exclamation=False,
-                      set_to_not=False,
-                      
-                      
-                      
+                      set_to_not=False,                      
                       ):
     """
     Input:
@@ -36,9 +33,6 @@ def preprocess_corpus(corpus,stemming=False,
     exclamation: if true, the word "exclamation" is added at the end of a tweet that contain one or more "!". 
     set_to_not: if true, all words ending with "n't" is replaced by not. 
    
-    
-    
-    
     Output:
     new_corpus: a new corpus, on same format as the input corpus. 
     """

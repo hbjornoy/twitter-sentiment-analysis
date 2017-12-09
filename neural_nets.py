@@ -1,12 +1,19 @@
+import random as rn
+import tensorflow as tf
+from keras import backend as K
 import sklearn as sk
-import keras
 from keras.layers import *
 from keras.layers.core import *
-import tensorflow as tf
-import random as rn
-from keras import backend as K
+import keras
 
 def basic_model(input_dimensions):
+    
+    from numpy.random import seed
+    seed(1337)
+    import random as rn
+    rn.seed(1337)
+    from tensorflow import set_random_seed
+    set_random_seed(1337)
     
     model = keras.models.Sequential()
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
@@ -51,11 +58,6 @@ def deep_2_model(input_dimensions):
 
 
 def deep_HB(input_dimensions):
-    rn.seed(7)
-    tf.set_random_seed(7)
-    session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
-    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
-    K.set_session(sess)
     model = keras.models.Sequential()
     model.add(Dense(150, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
@@ -68,7 +70,7 @@ def deep_HB(input_dimensions):
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
 
-
+"""
 def recurrent_model(input_dimensions):
     # Start neural network
     model = keras.models.Sequential()
@@ -110,4 +112,4 @@ def convolutional_model(input_dimensions):
 
     model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0001, decay=1e-6), metrics=['accuracy'])
 
-    return model
+    return model"""

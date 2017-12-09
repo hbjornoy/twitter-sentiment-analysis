@@ -1,3 +1,8 @@
+
+import random as rn
+from keras import backend as K
+import tensorflow as tf
+
 from gensim.scripts.glove2word2vec import glove2word2vec
 import gensim
 import time
@@ -9,10 +14,15 @@ import tensorflow as tf
 import random as rn
 from keras import backend as K
 
+import re
+
 import helpers as HL 
-np.random.seed(7)
-rn.seed(7)
-tf.set_random_seed(7)
+
+from numpy.random import seed
+
+np.random.seed(1337)
+rn.seed(1337)
+tf.set_random_seed(1337)
 
 
 def create_gensim_word2vec_file(path_to_original_glove_file):
@@ -21,8 +31,15 @@ def create_gensim_word2vec_file(path_to_original_glove_file):
 
     :param path_to_original_glove_file: This the relative path to the original pretrained Glovefile must be given.
     """
+    
+    #Finding the dimention number in the path
+    number_of_dims = re.findall(r'\d+',path_to_original_glove_file)[2]
+
+    #Creating output filename
+    output_file_name = "data/" + "gensim_global_vectors_" + number_of_dims + "dim.txt"
+        
     # spits out a .txt-file with the vectors in gensim format
-    glove2word2vec(glove_input_file=path_to_original_glove_file, word2vec_output_file="gensim_global_vectors.txt")
+    glove2word2vec(glove_input_file=path_to_original_glove_file, word2vec_output_file = output_file_name)
 
 
 def make_glove(path_to_gensim_global_vectors):
@@ -72,13 +89,12 @@ def create_labels(total_training_tweets, nr_pos_tweets):
     return labels
 
 
-def run_k_fold(models, X, Y, epochs, n_folds, seed):
+def run_k_fold(models, X, Y, epochs, n_folds):
     
-    #tried some shit that i dont think work...
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
-    
+        
     for neural_model in models:
 
         model_name = neural_model.__name__
@@ -88,7 +104,7 @@ def run_k_fold(models, X, Y, epochs, n_folds, seed):
 
         start = time.time()
 
-        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=seed)
+        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
         cv_scores = []
         pos_scores = []
         neg_scores = []
@@ -124,7 +140,7 @@ def run_k_fold(models, X, Y, epochs, n_folds, seed):
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets):
-
+    
     num_of_dim = global_vectors.syn0.shape[1]
 
     # seperate traindata and testdata
@@ -137,7 +153,7 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
-    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs=10, n_folds=3, seed=7)
+    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs=10, n_folds=3)
 
 def method1(path_to_gensim_global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, all_neural_nets=False):
 
