@@ -18,13 +18,6 @@ import re
 
 import helpers as HL 
 
-from numpy.random import seed
-
-np.random.seed(1337)
-rn.seed(1337)
-tf.set_random_seed(1337)
-
-
 def create_gensim_word2vec_file(path_to_original_glove_file):
     """
     It creates a gensim_glove_vectors.txt-file in the same folder, that can be downloaded after
@@ -91,6 +84,7 @@ def create_labels(total_training_tweets, nr_pos_tweets):
 
 def run_k_fold(models, X, Y, epochs, n_folds):
     
+    #Needed to keep results reproducable 
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
@@ -153,7 +147,7 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
-    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs=10, n_folds=3)
+    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs=3, n_folds=2)
 
 def method1(path_to_gensim_global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, all_neural_nets=False):
 

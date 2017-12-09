@@ -6,14 +6,13 @@ from keras.layers import *
 from keras.layers.core import *
 import keras
 
+from numpy.random import seed
+
+# ALL MODELS REQUIRE TO SET SEED() FOR REPRODUCABLE RESULTS
+
 def basic_model(input_dimensions):
     
-    from numpy.random import seed
-    seed(1337)
-    import random as rn
-    rn.seed(1337)
-    from tensorflow import set_random_seed
-    set_random_seed(1337)
+    seed(1337) # Needed for reproducable results 
     
     model = keras.models.Sequential()
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
@@ -23,6 +22,9 @@ def basic_model(input_dimensions):
 
 
 def basic_model_adam(input_dimensions):
+    
+    seed(1337)
+
     model = keras.models.Sequential()
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
@@ -31,6 +33,9 @@ def basic_model_adam(input_dimensions):
 
 
 def wide_model(input_dimensions):
+    
+    seed(1337)
+
     model = keras.models.Sequential()
     model.add(Dense(150, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
@@ -39,6 +44,9 @@ def wide_model(input_dimensions):
 
 
 def deep_1_model(input_dimensions):
+    
+    seed(1337)
+
     model = keras.models.Sequential()
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(60, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
@@ -48,6 +56,9 @@ def deep_1_model(input_dimensions):
 
 
 def deep_2_model(input_dimensions):
+    
+    seed(1337)
+
     model = keras.models.Sequential()
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(60, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
@@ -58,6 +69,9 @@ def deep_2_model(input_dimensions):
 
 
 def deep_HB(input_dimensions):
+    
+    seed(1337)
+
     model = keras.models.Sequential()
     model.add(Dense(150, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
