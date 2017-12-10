@@ -107,7 +107,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         for train, test in kfold.split(X, Y):
             early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=0, callbacks=[early_stopping])
+            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
 
             score = model.evaluate(X[test], Y[test], verbose=0)
             cv_scores.append(score[1] * 100)
@@ -133,7 +133,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         print("Time taken: ", (time.time() - start) / 60, "\n")
 
 
-def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets):
+def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
     
     num_of_dim = global_vectors.syn0.shape[1]
 
@@ -147,7 +147,7 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
-    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs=3, n_folds=2)
+    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
 
 def method1(path_to_gensim_global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, all_neural_nets=False):
 
@@ -164,7 +164,7 @@ def method1(path_to_gensim_global_vectors, processed_corpus, total_training_twee
 
 
 
-def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name):
+def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs):
     """
     Input: 
     neural_net: Name of a neural net model 
@@ -197,7 +197,9 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     
     early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
-    model.fit(train_document_vecs, labels, epochs=10, batch_size=1024, verbose=0, callbacks=[early_stopping])
+    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
+    
+    print("Hello world")
     pred=model.predict(test_document_vecs)
     
     pred_ones=[]
