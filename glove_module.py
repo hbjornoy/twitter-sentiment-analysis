@@ -103,6 +103,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         pos_scores = []
         neg_scores = []
         ratio_of_pos_guesses = []
+        
+        model_scores = []
 
         for train, test in kfold.split(X, Y):
             early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
@@ -131,6 +133,10 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
+        
+        model_scores.append(np.mean(cv_scores))
+      
+    return model_scores
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
@@ -147,7 +153,9 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
-    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
+    model_scores = run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
+    
+    return model_scores
 
 def method1(path_to_gensim_global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, all_neural_nets=False):
 
