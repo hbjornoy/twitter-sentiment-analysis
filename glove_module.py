@@ -6,15 +6,33 @@ import numpy as np
 import keras
 import neural_nets as NN
 
-
-def create_gensim_word2vec_file(path_to_original_glove_file):
+def create_gensim_word2vec_file(path_to_glove_folder):
     """
-    It creates a gensim_glove_vectors.txt-file in the same folder, that can be downloaded after
-
-    :param path_to_original_glove_file: This the relative path to the original pretrained Glovefile must be given.
+    :param path_to_glove_folder: Go to Stanfords website https://nlp.stanford.edu/projects/glove/ and download their twitterdataset,
+            put it in the same folder as this function and write the path to it as the input of this function
+    :return: nothing but creates a .txt-file with the gensim object, afterwards you can delete the original glove-files
+            and keep the created gensim___.txt files and use the function load_gensim_global_vectors(path_to_global_vectors) to load them in.
     """
-    # spits out a .txt-file with the vectors in gensim format
-    glove2word2vec(glove_input_file=path_to_original_glove_file, word2vec_output_file="gensim_global_vectors.txt")
+
+    for filename in os.listdir(path_to_glove_folder):
+        if filename.endswith(".txt"):
+            filepath = os.path.join(path_to_glove_folder, filename)
+            dim = get_dim_of_file(filename)
+            name_of_filecreated = "gensim_global_vectors_"+ dim + "dim.txt"
+
+            # spits out a .txt-file with the vectors in gensim format
+            glove2word2vec(glove_input_file=filepath, word2vec_output_file="gensim_global_vectors_"+ dim + "dim.txt")
+            print(name_of_filecreated)
+            continue
+        else:
+            continue
+
+def get_dim_of_file(filename):
+    removed_27 = filename.replace("27", "")
+    # after removing 27 it should only be dim_nr. that is numerical, create regex that filter nonnumericals out
+    non_decimal = re.compile(r'[^\d]+')
+    dim = non_decimal.sub('', removed_27)
+    return dim
 
 
 def make_glove(path_to_gensim_global_vectors):
@@ -110,7 +128,16 @@ def run_k_fold(models, X, Y, epochs, n_folds, seed):
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets):
+    """
+    TRY NORMALIZING gloVe.syn0norm BEFORE INPUTTING
 
+    :param neural_nets_functions:
+    :param global_vectors:
+    :param processed_corpus:
+    :param total_training_tweets:
+    :param nr_pos_tweets:
+    :return:
+    """
     num_of_dim = global_vectors.syn0.shape[1]
 
     # seperate traindata and testdata
