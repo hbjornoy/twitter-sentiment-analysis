@@ -106,3 +106,8 @@ ENV/
 
 # mypy
 .mypy_cache/
+glove.twitter.27B/
+data/gensim_global_vectors_100dim.txt
+data/gensim_global_vectors_200dim.txt
+data/gensim_global_vectors_50dim.txt
+data/gensim_global_vectors_25dim.txt

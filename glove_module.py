@@ -1,3 +1,8 @@
+
+import random as rn
+from keras import backend as K
+import tensorflow as tf
+
 from gensim.scripts.glove2word2vec import glove2word2vec
 import gensim
 import time
@@ -5,8 +10,16 @@ import sklearn as sk
 import numpy as np
 import keras
 import neural_nets as NN
+import tensorflow as tf
+import random as rn
+from keras import backend as K
+import re
+import os
 
-def create_gensim_word2vec_file(path_to_glove_folder):
+import helpers as HL
+
+
+def create_gensim_word2vec_file(path_to_original_glove_file):
     """
     :param path_to_glove_folder: Go to Stanfords website https://nlp.stanford.edu/projects/glove/ and download their twitterdataset,
             put it in the same folder as this function and write the path to it as the input of this function
@@ -14,9 +27,9 @@ def create_gensim_word2vec_file(path_to_glove_folder):
             and keep the created gensim___.txt files and use the function load_gensim_global_vectors(path_to_global_vectors) to load them in.
     """
 
-    for filename in os.listdir(path_to_glove_folder):
+    for filename in os.listdir(path_to_original_glove_file):
         if filename.endswith(".txt"):
-            filepath = os.path.join(path_to_glove_folder, filename)
+            filepath = os.path.join(path_to_original_glove_file, filename)
             dim = get_dim_of_file(filename)
             name_of_filecreated = "gensim_global_vectors_"+ dim + "dim.txt"
 
@@ -82,7 +95,13 @@ def create_labels(total_training_tweets, nr_pos_tweets):
     return labels
 
 
-def run_k_fold(models, X, Y, epochs, n_folds, seed):
+def run_k_fold(models, X, Y, epochs, n_folds):
+    
+    #Needed to keep results reproducable 
+    session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
+    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
+    K.set_session(sess)
+        
     for neural_model in models:
 
         model_name = neural_model.__name__
@@ -92,16 +111,18 @@ def run_k_fold(models, X, Y, epochs, n_folds, seed):
 
         start = time.time()
 
-        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=seed)
+        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
         cv_scores = []
         pos_scores = []
         neg_scores = []
         ratio_of_pos_guesses = []
+        
+        model_scores = []
 
         for train, test in kfold.split(X, Y):
             early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=0, callbacks=[early_stopping])
+            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
 
             score = model.evaluate(X[test], Y[test], verbose=0)
             cv_scores.append(score[1] * 100)
@@ -125,24 +146,19 @@ def run_k_fold(models, X, Y, epochs, n_folds, seed):
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
+        
+        model_scores.append(np.mean(cv_scores))
+      
+    return model_scores
 
 
-def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets):
-    """
-    TRY NORMALIZING gloVe.syn0norm BEFORE INPUTTING
+def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
 
-    :param neural_nets_functions:
-    :param global_vectors:
-    :param processed_corpus:
-    :param total_training_tweets:
-    :param nr_pos_tweets:
-    :return:
-    """
     num_of_dim = global_vectors.syn0.shape[1]
 
     # seperate traindata and testdata
-    train_corpus = processed_corpus[:total_training_tweets:]
-    predict_corpus = processed_corpus[total_training_tweets::]
+    train_corpus = processed_corpus[:total_training_tweets:] 
+    predict_corpus = processed_corpus[total_training_tweets::] 
 
     # Build a vector of all the words in a tweet
     train_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
@@ -150,7 +166,9 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
-    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs=10, n_folds=3, seed=7)
+    model_scores = run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
+    
+    return model_scores
 
 def method1(path_to_gensim_global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, all_neural_nets=False):
 
@@ -166,5 +184,56 @@ def method1(path_to_gensim_global_vectors, processed_corpus, total_training_twee
     classify_with_neural_networks(neural_nets, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets)
 
 
+
+def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs):
+    """
+    Input: 
+    neural_net: Name of a neural net model 
+    global_vectors: global vectors created out the gensim-.txt files. 
+    total_training_tweets: (int) Number of tweets that are training tweets. Assums that the first poriton of the corpus is
+    training tweets, the second part is the unseen test set. 
+    nr_pos_tweets: (int) number of traning tweets that are positiv
+    kaggle_name: Name for csv file, must end in '.csv'. 
+    
+    Output: 
+    pred_ones: the predicions (1 or -1) 
+    - a .csv file with name 'kaggle_name' 
+    """
+    num_of_dim = global_vectors.syn0.shape[1]
+    # seperate traindata and testdata
+    train_corpus = full_corpus[:total_training_tweets:] 
+    predict_corpus = full_corpus[total_training_tweets::] 
+    # Build a vector of all the words in a tweet
+    train_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
+    train_document_vecs = sk.preprocessing.scale(train_document_vecs)
+    
+    test_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
+    test_document_vecs = sk.preprocessing.scale(test_document_vecs)
+
+    labels = create_labels(total_training_tweets, nr_pos_tweets)
+    
+    model_name = neural_net.__name__
+    
+    model = neural_net(num_of_dim)
+    
+    early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+
+    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
+    
+    print("Hello world")
+    pred=model.predict(test_document_vecs)
+    
+    pred_ones=[]
+    for i in pred:
+        if i> 0.5:
+            pred_ones.append(1)
+        else:
+            pred_ones.append(-1)
+            
+    #CREATING SUBMISSION
+    ids = list(range(1,10000+1))
+    HL.create_csv_submission(ids, pred_ones,kaggle_name)
+
+    return pred_ones
 
 
