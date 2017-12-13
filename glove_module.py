@@ -125,7 +125,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
-        
+    
+    model_scores = []
     for neural_model in models:
 
         model_name = neural_model.__name__
@@ -140,8 +141,6 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         pos_scores = []
         neg_scores = []
         ratio_of_pos_guesses = []
-        
-        model_scores = []
 
         for train, test in kfold.split(X, Y):
             early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
@@ -171,7 +170,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
 
-        model_scores.append(np.mean(cv_scores), np.std(cv_scores))
+        model_scores.append((np.mean(cv_scores), np.std(cv_scores)))
       
     return model_scores
 
