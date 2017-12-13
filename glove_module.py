@@ -53,18 +53,42 @@ def make_glove(path_to_gensim_global_vectors):
 
 
 def buildWordVector(tokens, size, model):
+
     vec = np.zeros(size).reshape((1, size))
-    count = 0.
+    count = 0
+    
     for word in tokens.split():
         try:
             word = word.decode('utf-8')
             word_vec = model[word].reshape((1, size))
             #idf_weighted_vec = word_vec * tfidf_dict[word]
             vec += word_vec
-            count += 1.
-        except KeyError: # handling the case where the token is not
-                         # in the corpus. useful for testing.
-            continue
+            count += 1
+            
+        except KeyError: # handling the case where the token is not in the corpus. useful for testing.
+            if len(word.split('-')) > 1:
+                word_vec = [0] * size
+                p_count = 0
+                
+                for part in word.split('-'):
+                    try:
+                        part_vec = model[part].reshape((1, size))
+                        if np.any(np.isinf(part_vec)):
+                            print("part that contains inf", part)
+                            print(part_vec[0:3])
+                        word_vec += part_vec
+                        p_count += 1
+                        
+                    except KeyError:
+                        continue
+                        
+                if p_count != 0:
+                    word_vec /= p_count
+                vec += word_vec
+                count += 1
+            else:
+                continue
+
     if count != 0:
         vec /= count
     return vec
@@ -131,6 +155,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
+        
+        return np.mean(cv_scores), np.std(cv_scores)
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
@@ -142,26 +168,18 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
     predict_corpus = processed_corpus[total_training_tweets::] 
 
     # Build a vector of all the words in a tweet
-    train_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
+    vectors = np.zeros(len(train_corpus), dtype=object)
+    for i, doc in enumerate(train_corpus):
+        if (i % 50000) == 0:
+            print("tweets processed: %.0f  of total number of tweets: %.0f" % (i,len(train_corpus)))
+        vectors[i] = buildWordVector(doc, num_of_dim, global_vectors)
+    train_document_vecs = np.concatenate(vectors)
     train_document_vecs = sk.preprocessing.scale(train_document_vecs)
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
-    run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
-
-def method1(path_to_gensim_global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, all_neural_nets=False):
-
-    global_vectors = make_glove(path_to_gensim_global_vectors)
-
-    if all_neural_nets == False:
-        neural_nets = [NN.deep_HB]
-    elif all_neural_nets == True:
-        neural_nets = [NN.basic_model, NN.basic_model_adam, NN.wide_model, NN.deep_2_model, NN.deep_HB]
-    else:
-        neural_nets = all_neural_nets
-
-    classify_with_neural_networks(neural_nets, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets)
-
+    accuracy, std= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
+    return accuracy, std
 
 
 def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs):
