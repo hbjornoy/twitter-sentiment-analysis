@@ -13,26 +13,39 @@ import neural_nets as NN
 import tensorflow as tf
 import random as rn
 from keras import backend as K
-
 import re
+import os
 
-import helpers as HL 
+import helpers as HL
+
 
 def create_gensim_word2vec_file(path_to_original_glove_file):
     """
-    It creates a gensim_glove_vectors.txt-file in the same folder, that can be downloaded after
-
-    :param path_to_original_glove_file: This the relative path to the original pretrained Glovefile must be given.
+    :param path_to_glove_folder: Go to Stanfords website https://nlp.stanford.edu/projects/glove/ and download their twitterdataset,
+            put it in the same folder as this function and write the path to it as the input of this function
+    :return: nothing but creates a .txt-file with the gensim object, afterwards you can delete the original glove-files
+            and keep the created gensim___.txt files and use the function load_gensim_global_vectors(path_to_global_vectors) to load them in.
     """
-    
-    #Finding the dimention number in the path
-    number_of_dims = re.findall(r'\d+',path_to_original_glove_file)[2]
 
-    #Creating output filename
-    output_file_name = "data/" + "gensim_global_vectors_" + number_of_dims + "dim.txt"
-        
-    # spits out a .txt-file with the vectors in gensim format
-    glove2word2vec(glove_input_file=path_to_original_glove_file, word2vec_output_file = output_file_name)
+    for filename in os.listdir(path_to_original_glove_file):
+        if filename.endswith(".txt"):
+            filepath = os.path.join(path_to_original_glove_file, filename)
+            dim = get_dim_of_file(filename)
+            name_of_filecreated = "gensim_global_vectors_"+ dim + "dim.txt"
+
+            # spits out a .txt-file with the vectors in gensim format
+            glove2word2vec(glove_input_file=filepath, word2vec_output_file="gensim_global_vectors_"+ dim + "dim.txt")
+            print(name_of_filecreated)
+            continue
+        else:
+            continue
+
+def get_dim_of_file(filename):
+    removed_27 = filename.replace("27", "")
+    # after removing 27 it should only be dim_nr. that is numerical, create regex that filter nonnumericals out
+    non_decimal = re.compile(r'[^\d]+')
+    dim = non_decimal.sub('', removed_27)
+    return dim
 
 
 def make_glove(path_to_gensim_global_vectors):
@@ -127,6 +140,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         pos_scores = []
         neg_scores = []
         ratio_of_pos_guesses = []
+        
+        model_scores = []
 
         for train, test in kfold.split(X, Y):
             early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
@@ -155,12 +170,14 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
-        
-        return np.mean(cv_scores), np.std(cv_scores)
+
+        model_scores.append(np.mean(cv_scores), np.std(cv_scores))
+      
+    return model_scores
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
-    
+
     num_of_dim = global_vectors.syn0.shape[1]
 
     # seperate traindata and testdata
@@ -178,8 +195,8 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
-    accuracy, std= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
-    return accuracy, std
+    model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
+    return model_scores
 
 
 def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs):
