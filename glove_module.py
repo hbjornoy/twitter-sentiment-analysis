@@ -130,10 +130,9 @@ def run_k_fold(models, X, Y, epochs, n_folds):
     for neural_model in models:
 
         model_name = neural_model.__name__
-
+        
         input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
-
         start = time.time()
 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
@@ -145,14 +144,21 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         for train, test in kfold.split(X, Y):
             early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
-
-            score = model.evaluate(X[test], Y[test], verbose=0)
+            if model_name.startswith('conv'):
+                Xconv_train = np.expand_dims(X[train], axis=2)
+                model.fit(Xconv_train, Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
+                Xconv_test = np.expand_dims(X[train], axis=2)
+                score = model.evaluate(Xconv_test, Y[test], verbose=0)
+                pred = model.predict(Xconv_test)
+            else:
+                model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
+                score = model.evaluate(X[test], Y[test], verbose=0)
+                pred = model.predict(X[test])
+                
             cv_scores.append(score[1] * 100)
 
             # To analyze if it is unbalanced classifying
             labels = Y[test]
-            pred = model.predict(X[test])
             pos_right = 0
             neg_right = 0
             for i, label in enumerate(labels):

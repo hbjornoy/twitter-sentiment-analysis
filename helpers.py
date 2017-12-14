@@ -76,6 +76,14 @@ def creating_n_grams_cropus(n_gram, corpus):
     return new_corpus
 
 """
+def ngram(text,grams):
+    model=[]
+    count=0
+    for token in text[:len(text)-grams+1]:
+       model.append(text[count:count+grams])
+       count=count+1
+    return model
+
 def add_n_grams(line, n_gram):
 
     n_grams = []
