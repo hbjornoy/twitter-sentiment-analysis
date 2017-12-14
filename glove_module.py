@@ -130,10 +130,9 @@ def run_k_fold(models, X, Y, epochs, n_folds):
     for neural_model in models:
 
         model_name = neural_model.__name__
-
+        
         input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
-
         start = time.time()
 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
@@ -141,18 +140,18 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         pos_scores = []
         neg_scores = []
         ratio_of_pos_guesses = []
-
+        
         for train, test in kfold.split(X, Y):
             early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
             model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
-
             score = model.evaluate(X[test], Y[test], verbose=0)
-            cv_scores.append(score[1] * 100)
+            #pred = model.predict(X[test])
+            cv_scores.append(score)
 
+        
             # To analyze if it is unbalanced classifying
             labels = Y[test]
-            pred = model.predict(X[test])
             pos_right = 0
             neg_right = 0
             for i, label in enumerate(labels):
@@ -173,6 +172,57 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         model_scores.append((np.mean(cv_scores), np.std(cv_scores)))
       
     return model_scores
+
+
+def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
+    model = tuned_model
+    
+    #Needed to keep results reproducable 
+    session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
+    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
+    K.set_session(sess)
+    
+    start = time.time()
+    kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
+    cv_scores = []
+    
+    for train, test in kfold.split(X, Y):
+            early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+
+            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
+                      validation_data=(X[test], Y[test]))
+            score = model.evaluate(X[test], Y[test], verbose=1)
+            #pred = model.predict(X[test])
+            cv_scores.append(score)
+    print("Accuracies: %.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
+            
+    return model, cv_scores
+
+    
+    
+
+
+def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.7):
+    split_size = int(X.shape[0]*split)
+    
+    #np.random.shuffle(X)
+    #np.random.shuffle(Y)
+    train_x, val_x = X[:split_size], X[split_size:]
+    train_y, val_y = Y[:split_size], Y[split_size:]
+    
+    start = time.time()
+    
+    cv_scores, model = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds)
+    #model.fit(train_x, train_y, epochs=epochs, batch_size=1024, verbose=1, validation_data=(val_x, val_y))
+    score = model.evaluate(val_x, val_y, verbose=0)
+    #pred = model.predict(val_x)
+    
+    print("cv_scores:", cv_scores)
+    print("evaluation score:", score)
+    print("Time taken: ", (time.time() - start) / 60, "\n")
+    
+    return model, cv_scores
+
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
