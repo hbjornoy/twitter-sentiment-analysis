@@ -7,7 +7,7 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 import gensim
 import time
 import sklearn as sk
-import sklearn.preprosessing
+import sklearn.preprocessing
 import numpy as np
 import keras
 import neural_nets as NN
