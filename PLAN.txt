@@ -37,6 +37,7 @@ personen(e) i parentes er bare et forslag, jeg bare vet at jeg ikke klarer å gj
     - Determining Epochs (har begynt på, må gjøres ferdig.. )
     - neural nets- må ryddes/fikses/ferdigstilles
     - glove_solution, sh-filene, cooc, pickle vocab- fått fra skolen, gjort små endringer.. må kommenteres osv
+    - data analysis (både py og notebook)- må sees over av en av dere to, osv
     - (hva annet skal vi levere, supert om vi blir enige om en liste)
 7. Lage RUN.PY
 8. VELGE KAGGLE SCORE (THOMAS- han er leder av laget)
