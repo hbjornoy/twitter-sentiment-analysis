@@ -134,7 +134,6 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         model_name = neural_model.__name__
         
         input_dimensions = X.shape[1]
-        model = neural_model(input_dimensions)
         start = time.time()
 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
@@ -144,9 +143,9 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         ratio_of_pos_guesses = []
         
         for train, test in kfold.split(X, Y):
-            early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
-
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+            model = neural_model(input_dimensions)
+            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], validation_data=(X[test], Y[test]))
             score = model.evaluate(X[test], Y[test], verbose=0)
             pred = model.predict(X[test])
             cv_scores.append(score)
