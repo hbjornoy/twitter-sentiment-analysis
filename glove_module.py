@@ -7,6 +7,7 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 import gensim
 import time
 import sklearn as sk
+import sklearn.preprosessing
 import numpy as np
 import keras
 import neural_nets as NN
@@ -240,7 +241,7 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
             print("tweets processed: %.0f  of total number of tweets: %.0f" % (i,len(train_corpus)))
         vectors[i] = buildWordVector(doc, num_of_dim, global_vectors)
     train_document_vecs = np.concatenate(vectors)
-    train_document_vecs = sk.preprocessing.scale(train_document_vecs)
+    train_document_vecs = sklearn.preprosessing.scale(train_document_vecs)
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
