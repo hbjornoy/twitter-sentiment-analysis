@@ -144,10 +144,12 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         ratio_of_pos_guesses = []
         
         for train, test in kfold.split(X, Y):
-            early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
-            score = model.evaluate(X[test], Y[test], verbose=0)
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
+            model = neural_model(input_dimensions)
+            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], validation_data=(X[test], Y[test]))
+            score = model.evaluate(X[test], Y[test], verbose=1)[1]
+
             pred = model.predict(X[test])
             cv_scores.append(score)
 
@@ -166,6 +168,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             neg_scores.append((neg_right / (len(labels) * 0.5))*100)
 
         print("Model: ", model_name)
+        print(history)
+        print(cv_scores)
         print("%.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
