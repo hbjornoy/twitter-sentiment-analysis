@@ -13,6 +13,8 @@ import neural_nets as NN
 import tensorflow as tf
 import random as rn
 from keras import backend as K
+from sklearn import preprocessing
+from sklearn import model_selection
 import re
 import os
 
@@ -146,9 +148,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
 
             model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
             score = model.evaluate(X[test], Y[test], verbose=0)
-            #pred = model.predict(X[test])
+            pred = model.predict(X[test])
             cv_scores.append(score)
-
         
             # To analyze if it is unbalanced classifying
             labels = Y[test]
