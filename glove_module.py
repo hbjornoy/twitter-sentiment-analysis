@@ -7,14 +7,14 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 import gensim
 import time
 import sklearn as sk
+import sklearn.preprocessing
+from sklearn import model_selection
 import numpy as np
 import keras
 import neural_nets as NN
 import tensorflow as tf
 import random as rn
 from keras import backend as K
-from sklearn import preprocessing
-from sklearn import model_selection
 import re
 import os
 
@@ -134,6 +134,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         model_name = neural_model.__name__
         
         input_dimensions = X.shape[1]
+        model = neural_model(input_dimensions)
         start = time.time()
 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
@@ -143,12 +144,13 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         ratio_of_pos_guesses = []
         
         for train, test in kfold.split(X, Y):
-            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
-            model = neural_model(input_dimensions)
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], validation_data=(X[test], Y[test]))
+            early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+
+            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
             score = model.evaluate(X[test], Y[test], verbose=0)
             pred = model.predict(X[test])
             cv_scores.append(score)
+
         
             # To analyze if it is unbalanced classifying
             labels = Y[test]
@@ -192,7 +194,7 @@ def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
             model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
                       validation_data=(X[test], Y[test]))
             score = model.evaluate(X[test], Y[test], verbose=1)
-            pred = model.predict(X[test])
+            #pred = model.predict(X[test])
             cv_scores.append(score)
     print("Accuracies: %.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
             
@@ -240,7 +242,7 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
             print("tweets processed: %.0f  of total number of tweets: %.0f" % (i,len(train_corpus)))
         vectors[i] = buildWordVector(doc, num_of_dim, global_vectors)
     train_document_vecs = np.concatenate(vectors)
-    train_document_vecs = sk.preprocessing.scale(train_document_vecs)
+    train_document_vecs = sklearn.preprocessing.scale(train_document_vecs)
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
 
