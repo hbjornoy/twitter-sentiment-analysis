@@ -143,7 +143,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         ratio_of_pos_guesses = []
         
         for train, test in kfold.split(X, Y):
-            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
             model = neural_model(input_dimensions)
             model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], validation_data=(X[test], Y[test]))
             score = model.evaluate(X[test], Y[test], verbose=0)
