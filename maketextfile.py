@@ -5,12 +5,24 @@ import numpy as np
 import pickle
 
 
-#import files given by the ML course: 
 
-import cooc as CO
-import pickle_vocab as PV
+
 
 def make_file(embedding_npy_file,vocab_pkl_file, textfile_name):
+    """
+    
+    MULIG JEG GJØR EN FEIL I DENNE, MEN TROR EGENTLIG IKKE DET (HVORDAN MATCHE ORD TIL VEKTOR)¨
+    
+    Input: 
+    embedding_npy_file: A string, which is the disired name for your embedding file, not containing the ending .npy. 
+    If you want to name your file 'embeddings.npy', then embedding_npy_file='embeddings'. 
+    vocab_pkl_file: A string, which is the name of your vocab pickle file, eg vocab.pkl
+    textfile_name: A string, which is the desired name of the textfile storing the word vectors, eg. 'global_vectors.txt'. 
+    
+    
+    Output: A file, named textfile_name, in which each line is a word, then its vector. 
+    
+    """
     
     global_vectors=np.load(embedding_npy_file)
     
@@ -26,21 +38,33 @@ def make_file(embedding_npy_file,vocab_pkl_file, textfile_name):
         f.write(' ')
         f.write(str(dim))
         f.write('\n')
-        for i, word in enumerate(vocab):
+        for  word in (vocab):
             f.write(word)
             f.write(' ')
-            for number in global_vectors[i]:
-                f.write(str(number))
-                f.write(' ')
-            f.write('\n')
+            index=vocab.get(word,-1)
+            if index >= 0:
+                for number in global_vectors[index]:
+                    f.write(str(number))
+                    f.write(' ')
+                f.write('\n')
 
 def corpus_to_textfile(corpus,filename):
+    
+    """
+    Input 
+    corpus: A corpus: List of binary strings, each binary string contains a tweet. 
+    filename: A string, the desired name of the text file that will contain the corpus, eg 'corpus.txt'. 
+    
+    Output: A file, named filename, which containts the corpus in the same way the original data files contains the 
+    unpreprocessed corpus. 
+    """
+    
     with open(filename, 'w') as f: 
-        for line in corpus[0:10]:
+        for line in corpus:
             line=line.decode("utf-8")
             f.write(line)
             f.write('\n')
             
-def vocab_from_corpusfile(vocab_filename,corpus_file): 
+#def vocab_from_corpusfile(vocab_filename,corpus_file): 
     
     

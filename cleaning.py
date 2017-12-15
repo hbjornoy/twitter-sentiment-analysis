@@ -4,6 +4,17 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
 import numpy as np
 import pickle 
+from sklearn.feature_extraction.text import TfidfVectorizer
+def get_dynamic_stopwords(corpus, MinDf, MaxDf,sublinearTF=True,useIDF=False):
+    vectorizer = TfidfVectorizer(
+            min_df = MinDf,   # if between 0 and 1: percentage, if int: absolute value.
+            max_df = MaxDf,   # # if between 0 and 1: percentage, if int: absolute value. ( more then 0.8 * number of tweets )
+            sublinear_tf = sublinearTF, # scale the term frequency in logarithmic scale
+            use_idf = useIDF
+            )
+    vectorizer.fit_transform(corpus)
+    return vectorizer.stop_words_
+    
 
 
 def remove_stopwords(corpus, custom_stop_words):
@@ -26,6 +37,10 @@ def remove_stopwords(corpus, custom_stop_words):
         new_words = new_words.encode('utf-8')
         new_corpus.append(new_words) 
     return new_corpus
+
+
+
+### De under her bruker vi ikke mer...
 
 def create_dictionary(cluster_file):
     """ 

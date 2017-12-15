@@ -15,7 +15,7 @@ def create_corpus(inputfiles):
     for file in inputfiles:
         with open(file,'rb') as infile:
             for line in infile:
-                corpus.append(line)
+                corpus.append(line[:-1])
         sum_so_far=sum(file_lengths)
         new_lenght=len(corpus)
         file_lengths.append(new_lenght-sum_so_far)
@@ -62,7 +62,7 @@ def add_n_grams(line, n_gram):
     #n_grams.append(b''.join([words[-1]]))
     return b' '.join(n_grams)
 
-def creating_n_grams_cropus(n_gram, corpus):
+def creating_n_grams_corpus(n_gram, corpus):
     new_corpus=[]
     
     for line in corpus:
@@ -133,7 +133,7 @@ def add_n_grams(line, n_gram):
 
     return b' '.join(n_grams)
 
-def creating_n_grams_cropus(n_gram, corpus):
+def creating_n_grams_corpus(n_gram, corpus):
     new_corpus=[]
     
     for line in corpus:
