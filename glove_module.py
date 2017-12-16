@@ -18,8 +18,11 @@ from keras import backend as K
 from keras.models import load_model
 import re
 import os
+import seaborn as sb
 
 import helpers as HL
+
+from numpy.random import seed
 
 
 def create_gensim_word2vec_file(path_to_original_glove_file):
@@ -82,11 +85,11 @@ def buildWordVector(tokens, size, model):
             count += 1
             
         except KeyError: # handling the case where the token is not in the corpus. useful for testing.
-            if len(word.split('-')) > 1:
+            if len(word.split('_')) > 1:
                 word_vec = [0] * size
                 p_count = 0
                 
-                for part in word.split('-'):
+                for part in word.split('_'):
                     try:
                         part_vec = model[part].reshape((1, size))
                         if np.any(np.isinf(part_vec)):
@@ -128,7 +131,23 @@ def run_k_fold(models, X, Y, epochs, n_folds):
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
+    
+    seed(1337)
+    
+    s = np.arange(X.shape[0])
+    
+    X = X[s]
+    Y = Y[s]
+    
+    #unseen_x = X[:10000]
+    #unseen_y = Y[:10000]
+
+    x_test = X[:40000]
+    y_test = Y[:40000]
    
+    X = X[40000:]
+    Y = Y[40000:] 
+    
     model_scores = []
     for neural_model in models:
  
@@ -137,8 +156,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
         start = time.time()
- 
-        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
+
+        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds)
         cv_scores = []
         pos_scores = []
         neg_scores = []
@@ -152,16 +171,18 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             
             model = neural_model(input_dimensions)
             
-            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
+            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(x_test, y_test))
             
             model = load_model('best_neural_model_save.hdf5')
             
             score = model.evaluate(X[test], Y[test], verbose=1)[1]
+            
+            print("Unseen score:", score)
 
             pred = model.predict(X[test])
+            
             cv_scores.append(score)
  
-       
             # To analyze if it is unbalanced classifying
             labels = Y[test]
             pos_right = 0
@@ -187,57 +208,68 @@ def run_k_fold(models, X, Y, epochs, n_folds):
      
     return model_scores
 
-def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds, unseen_data):
-    model_config = tuned_model.get_config()
-    
-    
+def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
     #Needed to keep results reproducable 
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
     
+    model_config = tuned_model.get_config()
+    
     start = time.time()
-    kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
+    kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=False)
     cv_scores = []
     histories = []
+    pos_scores = []
+    neg_scores = []
+    ratio_of_pos_guesses = []
     
     for train, test in kfold.split(X, Y):
-        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=1)
+        model_checkpoint = keras.callbacks.ModelCheckpoint("best_dd_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+        
         model = keras.models.Sequential.from_config(model_config)
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
-                            validation_data=(X[test], Y[test]))
-        score = model.evaluate(X[test], Y[test], verbose=1)
-        pred = model.predict(X[test])
-        cv_scores.append(score) # end results of the
+        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
+        score = model.evaluate(X[test], Y[test], verbose=0)
+        cv_scores.append(score) # end results of the cv
         histories.append(history)
-    print("Accuracies: %.2f%% (+/- %.2f%%)" % (np.mean([cv_score[1] for cv_score in cv_scores]), 
-                                               np.std([cv_score[0] for cv_score in cv_scores])))
+        
+    print("Val_accuracies: %.2f%% (+/- %.4f)" % (np.mean([cv_score[1]*100 for cv_score in cv_scores]), 
+                                               np.std([cv_score[1]*100 for cv_score in cv_scores])))
+    print("Time taken: ", (time.time() - start) / 60, "\n")
             
     return model, cv_scores, histories
     
 
-def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.7):
+def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     split_size = int(X.shape[0]*split)
     
-    #np.random.shuffle(X)
-    #np.random.shuffle(Y)
-    train_x, val_x = X[:split_size], X[split_size:]
-    train_y, val_y = Y[:split_size], Y[split_size:]
+    # randomize
+    np.random.seed(1337)
+    shuffle_indexes = np.arange(X.shape[0])
+    np.random.shuffle(shuffle_indexes)
+    X = X[shuffle_indexes]
+    Y = Y[shuffle_indexes]
+    
+    train_x, unseen_x = X[:split_size], X[split_size:]
+    train_y, unseen_y = Y[:split_size], Y[split_size:]
+    
+    models = []
+    cv_history = []
+    histories = []
     
     start = time.time()
+    model, cv_histories, histories = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds)
     
-    model, cv_scores, histories = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds)
-    
-    pred = model.predict(val_x)
-    
-    
-    print("cv_scores:", cv_scores)
-    print("evaluation score:", score)
+    train_score = model.evaluate(train_x, train_y)
+    unseen_score = model.evaluate(unseen_x, unseen_y)
+    print("evaluate on train_data: (loss:%.5f , acc:%.3f%%):" % (train_score[0], train_score[1]*100))
+    print("Unseen_accuracies: (loss:%.4f , acc:%.4f%%):" % (unseen_score[0], unseen_score[1]*100))
     print("Time taken: ", (time.time() - start) / 60, "\n")
     
-    return model, cv_scores, histories
+    return model, cv_histories, histories
 
 def train_NN(model, allX, allY, epochs):
     split_size = int(allX.shape[0]*0.90)
@@ -261,6 +293,26 @@ def train_NN(model, allX, allY, epochs):
         print("why did this happen?")
         print(prev_model, prev_history)
         return prev_model, prev_history
+
+def plot_history(history):
+    """should make this to plot the history of epochs and validationscore
+    maybe even the crossvalidation mean of at each epoch? smoothen out the graph :)
+    
+    - make history into dataframe that fits seaborn
+    - epoch on the x axis
+    - score on the y axix (0-1)
+    - plot val_los, val_acc, train_acc and train_loss
+    """
+    
+    import seaborn as sns
+    sb.set(style="darkgrid")
+
+    # Load the long-form example gammas dataset
+    gammas = sns.load_dataset("gammas")
+
+    # Plot the response with standard error
+    sb.tsplot(data=gammas, time="timepoint", unit="subject",
+           condition="ROI", value="BOLD signal")
     
     
     
@@ -318,15 +370,10 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     model = neural_net(num_of_dim)
     
     early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
-    
-    model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_for_prediction.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
 
-    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint])
-        
-    print("Loading best model...")    
-    model = load_model('best_neural_model_for_prediction.hdf5')
-    print("Best model loaded")
+    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
     
+    print("Hello world")
     pred=model.predict(test_document_vecs)
     
     pred_ones=[]
