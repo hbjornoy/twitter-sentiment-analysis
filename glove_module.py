@@ -21,6 +21,8 @@ import os
 
 import helpers as HL
 
+from numpy.random import seed
+
 
 def create_gensim_word2vec_file(path_to_original_glove_file):
     """
@@ -128,7 +130,23 @@ def run_k_fold(models, X, Y, epochs, n_folds):
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
+    
+    seed(1337)
+    
+    s = np.arange(X.shape[0])
+    
+    X = X[s]
+    Y = Y[s]
+    
+    #unseen_x = X[:10000]
+    #unseen_y = Y[:10000]
+
+    x_test = X[:40000]
+    y_test = Y[:40000]
    
+    X = X[40000:]
+    Y = Y[40000:] 
+    
     model_scores = []
     for neural_model in models:
  
@@ -152,16 +170,18 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             
             model = neural_model(input_dimensions)
             
-            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
+            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(x_test, y_test))
             
             model = load_model('best_neural_model_save.hdf5')
             
             score = model.evaluate(X[test], Y[test], verbose=1)[1]
+            
+            print("Unseen score:", score)
 
             pred = model.predict(X[test])
+            
             cv_scores.append(score)
  
-       
             # To analyze if it is unbalanced classifying
             labels = Y[test]
             pos_right = 0
@@ -318,15 +338,10 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     model = neural_net(num_of_dim)
     
     early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
-    
-    model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_for_prediction.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
 
-    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint])
-        
-    print("Loading best model...")    
-    model = load_model('best_neural_model_for_prediction.hdf5')
-    print("Best model loaded")
+    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
     
+    print("Hello world")
     pred=model.predict(test_document_vecs)
     
     pred_ones=[]
