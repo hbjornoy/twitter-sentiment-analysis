@@ -2,7 +2,8 @@ import numpy as np
 import nltk
 import enchant
 import time
-#from nltk.tokenize import TweetTokenizer
+
+from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import PorterStemmer
 
 from nltk.tokenize import TweetTokenizer
@@ -99,27 +100,27 @@ def preprocess_corpus(corpus,stemming=False,
             end_=len(words)-1
             if ((pos_smilies or all_smilies) and word_not_treated):
                 if (i>0 and (word=='d' and (words[i-1]==':' or words[i-1]==';'))) or word == ':d' or word == ';d':
-                    cleaned_tweet.append('possmiley')
+                    cleaned_tweet.append('smile')
                     word_not_treated=False
                 elif (i>0 and (word=='p' and (words[i-1]==':' or words[i-1]==';'))) or word == ':p' or word == ';p' :
-                    cleaned_tweet.append('possmiley')
+                    cleaned_tweet.append('smile')
                     word_not_treated=False
                 elif i>0 and word=='d' and (words[i-1]==':' or words[i-1]==';' or words[i-1]=='x'):
-                    cleaned_tweet.append('possmiley')
+                    cleaned_tweet.append('smile')
                     word_not_treated=False
                 elif i>0 and words[i-1]=='(' and (word==':' or word==';'):
-                    cleaned_tweet.append('possmiley')
+                    cleaned_tweet.append('smile')
                     word_not_treated=False
                 elif i>0 and word==')' and (words[i-1]==':' or words[i-1]==';'):
-                    cleaned_tweet.append('possmiley')
+                    cleaned_tweet.append('smile')
                     word_not_treated=False
 
             if ((neg_smilies or all_smilies) and word_not_treated):
                 if i>0 and words[i-1]==')' and (word==':' or word==';'):
-                    cleaned_tweet.append('negsmiley')
+                    cleaned_tweet.append('sad')
                     word_not_treated=False
                 elif i>0 and word=='(' and (words[i-1]==':' or words[i-1]==';'):
-                    cleaned_tweet.append('negsmiley')
+                    cleaned_tweet.append('sad')
                     word_not_treated=False
             
             if ((other_smilies or all_smilies) and word_not_treated):
@@ -210,7 +211,7 @@ def preprocess_corpus(corpus,stemming=False,
         if (hashtag_mention and there_is_hashtag) :
             cleaned_tweet.append('hashtag')
         if (number_mention and there_is_number) :
-            cleaned_tweet.append('thereisanumber')
+            cleaned_tweet.append('number')
         if (exclamation and there_is_exclamation):
             cleaned_tweet.append('exclamation')
             
@@ -228,4 +229,53 @@ def preprocess_corpus(corpus,stemming=False,
     print("Time in min total:", (elapsed - start) / 60 )
     return new_corpus       
     
+
+def get_dynamic_stopwords(corpus, MinDf, MaxDf,sublinearTF=True,useIDF=False):
+    """
+    Input: 
+    corpus: A corpus, 
+    MinDf: as min_df in sklearns TfidVectorizer:
+    MaxDf: as max_df in sklearns TfidVectorizer:
+    sublinearTF: as sublinear_tf in sklearns TfidVectorizer:
+    useIDF: as use_idf in sklearns TfidVectorizer:
+    
+    Output: 
+    vectorizer.stop_words_: A list of all words that should be removed form the corpus. 
+    """
+    vectorizer = TfidfVectorizer(
+            min_df = MinDf,   # if between 0 and 1: percentage, if int: absolute value.
+            max_df = MaxDf,   # # if between 0 and 1: percentage, if int: absolute value. ( more then 0.8 * number of tweets )
+            sublinear_tf = sublinearTF, # scale the term frequency in logarithmic scale
+            use_idf = useIDF
+            )
+    vectorizer.fit_transform(corpus)
+    return vectorizer.stop_words_
+    
+
+
+def remove_stopwords(corpus, custom_stop_words):
+    """
+    Input: 
+    corpus: A corpus 
+    custom_stop_words: A list of words that should be removed
+    
+    outout: 
+    new_corpus: A new corpus, as 'corpus', but all words in custom_stop_words are removed
+    """
+    
+    new_corpus=[]
+    for line in corpus:
+        words=line.decode("utf-8")#.split(" ")
+        words = ''.join(words.rsplit('\n', 1))
+        words=words.lower().split(" ")
+        new_words=[]
+        for word in words: 
+            if word not in custom_stop_words:
+                new_words.append(word)
+               
+            
+        new_words = ' '.join(new_words)
+        new_words = new_words.encode('utf-8')
+        new_corpus.append(new_words) 
+    return new_corpus
 
