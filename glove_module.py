@@ -8,6 +8,7 @@ import gensim
 import time
 import sklearn as sk
 import sklearn.preprocessing
+from sklearn import model_selection
 import numpy as np
 import keras
 import neural_nets as NN
@@ -143,12 +144,11 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         ratio_of_pos_guesses = []
        
         for train, test in kfold.split(X, Y):
- 
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
             model = neural_model(input_dimensions)
             history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], validation_data=(X[test], Y[test]))
             score = model.evaluate(X[test], Y[test], verbose=1)[1]
- 
+
             pred = model.predict(X[test])
             cv_scores.append(score)
  
@@ -271,7 +271,7 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
         vectors[i] = buildWordVector(doc, num_of_dim, global_vectors)
     train_document_vecs = np.concatenate(vectors)
     train_document_vecs = sklearn.preprocessing.scale(train_document_vecs)
- 
+
     labels = create_labels(total_training_tweets, nr_pos_tweets)
  
     model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
