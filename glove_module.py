@@ -85,11 +85,11 @@ def buildWordVector(tokens, size, model):
             count += 1
             
         except KeyError: # handling the case where the token is not in the corpus. useful for testing.
-            if len(word.split('-')) > 1:
+            if len(word.split('_')) > 1:
                 word_vec = [0] * size
                 p_count = 0
                 
-                for part in word.split('-'):
+                for part in word.split('_'):
                     try:
                         part_vec = model[part].reshape((1, size))
                         if np.any(np.isinf(part_vec)):
@@ -225,18 +225,19 @@ def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
     ratio_of_pos_guesses = []
     
     for train, test in kfold.split(X, Y):
-        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
+        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=1)
+        model_checkpoint = keras.callbacks.ModelCheckpoint("best_dd_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+        
         model = keras.models.Sequential.from_config(model_config)
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
-                            validation_data=(X[test], Y[test]))
+        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
         score = model.evaluate(X[test], Y[test], verbose=0)
         cv_scores.append(score) # end results of the cv
         histories.append(history)
         
-    print("Val_accuracies: %.2f%% (+/- %.4f%%)" % (np.mean([cv_score[1]*100 for cv_score in cv_scores]), 
-                                               np.std([cv_score[0]*100 for cv_score in cv_scores])))
+    print("Val_accuracies: %.2f%% (+/- %.4f)" % (np.mean([cv_score[1]*100 for cv_score in cv_scores]), 
+                                               np.std([cv_score[1]*100 for cv_score in cv_scores])))
     print("Time taken: ", (time.time() - start) / 60, "\n")
             
     return model, cv_scores, histories
@@ -248,9 +249,7 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     # randomize
     np.random.seed(1337)
     shuffle_indexes = np.arange(X.shape[0])
-    print(shuffle_indexes)
     np.random.shuffle(shuffle_indexes)
-    print(shuffle_indexes)
     X = X[shuffle_indexes]
     Y = Y[shuffle_indexes]
     
@@ -261,16 +260,13 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     cv_history = []
     histories = []
     
-    
-    
     start = time.time()
     model, cv_histories, histories = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds)
     
     train_score = model.evaluate(train_x, train_y)
     unseen_score = model.evaluate(unseen_x, unseen_y)
-    print("evaluate on train_data: (loss:%.2f%% , acc:%.4f%%):" % (train_score[0], train_score[1]))
-    print("Unseen_accuracies: (loss:%.2f%% , acc:%.4f%%):" % (unseen_score[0], unseen_score[1]))
-    print('metrics in score^:', model.metrics_names)
+    print("evaluate on train_data: (loss:%.5f , acc:%.3f%%):" % (train_score[0], train_score[1]*100))
+    print("Unseen_accuracies: (loss:%.4f , acc:%.4f%%):" % (unseen_score[0], unseen_score[1]*100))
     print("Time taken: ", (time.time() - start) / 60, "\n")
     
     return model, cv_histories, histories
