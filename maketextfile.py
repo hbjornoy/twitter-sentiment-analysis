@@ -48,6 +48,7 @@ def make_file(embedding_npy_file,vocab_pkl_file, textfile_name):
                     f.write(' ')
                 f.write('\n')
 
+
 def corpus_to_textfile(corpus,filename):
     
     """
