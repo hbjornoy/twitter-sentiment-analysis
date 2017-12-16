@@ -318,10 +318,15 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     model = neural_net(num_of_dim)
     
     early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
-
-    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
     
-    print("Hello world")
+    model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_for_prediction.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+
+    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint])
+        
+    print("Loading best model...")    
+    model = load_model('best_neural_model_for_prediction.hdf5')
+    print("Best model loaded")
+    
     pred=model.predict(test_document_vecs)
     
     pred_ones=[]
