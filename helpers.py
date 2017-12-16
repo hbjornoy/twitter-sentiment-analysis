@@ -102,12 +102,12 @@ def add_n_grams(line, n_gram):
             temp=[]
             number_of_blanks= n_gram-(first_words+1)
             for blank in range(number_of_blanks):
-                temp.append(b'_-')
+                temp.append(b'|_')
             words_to_fill_in=first_words+1
             for w in range(words_to_fill_in):
                 temp.append(words[w])
                 if w is not (words_to_fill_in-1):
-                                temp.append(b'-')
+                                temp.append(b'_')
             n_grams.append(b''.join(temp))
     
     
@@ -121,7 +121,7 @@ def add_n_grams(line, n_gram):
             for j in range(n_gram):
                 temp.append(words[index])
                 if j is not (n_gram-1):
-                    temp.append(b'-')
+                    temp.append(b'_')
                 index+=1
             #want to combine everything as a bit string.
             n_grams.append(b''.join(temp))
@@ -138,12 +138,12 @@ def add_n_grams(line, n_gram):
    
             for w in range(words_to_fill_in,0,-1):
                 temp.append(words[-(w)])
-                temp.append(b'-')
+                temp.append(b'_')
                         
             for blank in range(number_of_blanks):
-                temp.append(b'_')
+                temp.append(b'|')
                 if blank is not number_of_blanks-1:
-                    temp.append(b'-')
+                    temp.append(b'_')
             
             n_grams.append(b''.join(temp))
 

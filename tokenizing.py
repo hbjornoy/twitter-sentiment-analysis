@@ -246,10 +246,14 @@ def get_dynamic_stopwords(corpus, MinDf, MaxDf,sublinearTF=True,useIDF=False):
             min_df = MinDf,   # if between 0 and 1: percentage, if int: absolute value.
             max_df = MaxDf,   # # if between 0 and 1: percentage, if int: absolute value. ( more then 0.8 * number of tweets )
             sublinear_tf = sublinearTF, # scale the term frequency in logarithmic scale
-            use_idf = useIDF
+            use_idf = useIDF,
+            
+            #token_pattern = ''
+            #decode_error = 'ignore'
             )
     vectorizer.fit_transform(corpus)
-    return vectorizer.stop_words_
+    print("Size of Vocabulary:", len(vectorizer.vocabulary_))
+    return vectorizer.stop_words_, vectorizer.vocabulary_
     
 
 
@@ -272,8 +276,7 @@ def remove_stopwords(corpus, custom_stop_words):
         for word in words: 
             if word not in custom_stop_words:
                 new_words.append(word)
-               
-            
+
         new_words = ' '.join(new_words)
         new_words = new_words.encode('utf-8')
         new_corpus.append(new_words) 
