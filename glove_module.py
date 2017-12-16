@@ -207,7 +207,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         print("CV_SCORES:", cv_scores)
         print("CV_SCORES MEAN/STD:",  "%.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
         #print("UNSEEN_SCORES MEAN/STD:",  "%.2f%% (+/- %.2f%%)" % (np.mean(unseen_scores), np.std(unseen_scores)))
-
+        
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
@@ -240,6 +240,7 @@ def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
         history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
+        
         score = model.evaluate(X[test], Y[test], verbose=0)
         cv_scores.append(score) # end results of the cv
         
@@ -379,10 +380,12 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     model = neural_net(num_of_dim)
     
     early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+    model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_prediction_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
 
-    model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping])
+    history = model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint])
     
-    print("Hello world")
+    model = load_model('best_neural_model_prediction_model.hdf5')
+
     pred=model.predict(test_document_vecs)
     
     pred_ones=[]
@@ -397,5 +400,3 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     HL.create_csv_submission(ids, pred_ones,kaggle_name)
 
     return pred_ones
-
-
