@@ -15,6 +15,7 @@ import neural_nets as NN
 import tensorflow as tf
 import random as rn
 from keras import backend as K
+from keras.models import load_model
 import re
 import os
 
@@ -144,9 +145,17 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         ratio_of_pos_guesses = []
        
         for train, test in kfold.split(X, Y):
+            
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
+            
+            model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_save.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+            
             model = neural_model(input_dimensions)
-            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], validation_data=(X[test], Y[test]))
+            
+            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
+            
+            model = load_model('best_neural_model_save.hdf5')
+            
             score = model.evaluate(X[test], Y[test], verbose=1)[1]
 
             pred = model.predict(X[test])
