@@ -135,19 +135,16 @@ def run_k_fold(models, X, Y, epochs, n_folds):
     
     seed(1337)
     
-    s = np.arange(X.shape[0])
+    #split_size = 30000
     
-    X = X[s]
-    Y = Y[s]
+    #shuffle_indexes = np.arange(X.shape[0])
+    #np.random.shuffle(shuffle_indexes)
     
-    #unseen_x = X[:10000]
-    #unseen_y = Y[:10000]
-
-    x_test = X[:40000]
-    y_test = Y[:40000]
-   
-    X = X[40000:]
-    Y = Y[40000:] 
+    #X = X[shuffle_indexes]
+    #Y = Y[shuffle_indexes]
+    
+    #train_x, unseen_x = X[split_size:], X[:split_size]
+    #train_y, unseen_y = Y[split_size:], Y[:split_size]
     
     model_scores = []
     for neural_model in models:
@@ -160,30 +157,39 @@ def run_k_fold(models, X, Y, epochs, n_folds):
 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds)
         cv_scores = []
+       
         pos_scores = []
         neg_scores = []
         ratio_of_pos_guesses = []
-       
+    
+        #unseen_scores = []
+    
         for train, test in kfold.split(X, Y):
             
-            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=4, verbose=1)
             
             model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_save.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
             
             model = neural_model(input_dimensions)
             
-            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(x_test, y_test))
+            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
             
             model = load_model('best_neural_model_save.hdf5')
             
-            score = model.evaluate(X[test], Y[test], verbose=1)[1]
+            #Scores
             
-            print("Unseen score:", score)
+            cv_score = model.evaluate(X[test], Y[test], verbose=1)[1]
+            cv_scores.append(cv_score)
+            
+            #unseen_score = model.evaluate(unseen_x, unseen_y, verbose=1)[1]
+            #unseen_scores.append(unseen_score)
+            
+            print("CV-score:", cv_score)
+            #print("Unseen:", unseen_score)
 
+            #Predic for balance checking
             pred = model.predict(X[test])
-            
-            cv_scores.append(score)
- 
+             
             # To analyze if it is unbalanced classifying
             labels = Y[test]
             pos_right = 0
@@ -198,9 +204,10 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             neg_scores.append((neg_right / (len(labels) * 0.5))*100)
  
         print("Model: ", model_name)
-        print(history)
-        print(cv_scores)
-        print("%.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
+        print("CV_SCORES:", cv_scores)
+        print("CV_SCORES MEAN/STD:",  "%.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
+        #print("UNSEEN_SCORES MEAN/STD:",  "%.2f%% (+/- %.2f%%)" % (np.mean(unseen_scores), np.std(unseen_scores)))
+
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
