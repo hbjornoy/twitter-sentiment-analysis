@@ -6,6 +6,18 @@ import numpy as np
 import pickle 
 from sklearn.feature_extraction.text import TfidfVectorizer
 def get_dynamic_stopwords(corpus, MinDf, MaxDf,sublinearTF=True,useIDF=False):
+    
+    """
+    Input: 
+    corpus: A corpus, 
+    MinDf: as min_df in sklearns TfidVectorizer:
+    MaxDf: as max_df in sklearns TfidVectorizer:
+    sublinearTF: as sublinear_tf in sklearns TfidVectorizer:
+    useIDF: as use_idf in sklearns TfidVectorizer:
+    
+    Output: 
+    vectorizer.stop_words_: A list of all words that should be removed form the corpus. 
+    """
     vectorizer = TfidfVectorizer(
             min_df = MinDf,   # if between 0 and 1: percentage, if int: absolute value.
             max_df = MaxDf,   # # if between 0 and 1: percentage, if int: absolute value. ( more then 0.8 * number of tweets )

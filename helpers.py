@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import glove_module as GV
 
 def create_corpus(inputfiles):
     """
@@ -77,6 +78,21 @@ def creating_n_grams_corpus(n_gram, corpus):
 
 """
 def add_n_grams(line, n_gram):
+    
+    """
+    Input: 
+    line: A tweet
+    n_gram: a number, the number of words that are to be grouped together
+    
+    Output: 
+    b' '.join(n_grams): A line, containing the words from the input line grouped together in groups consisting of n_grams words. 
+    Each group is separated by a space, the words within a group is separated by a hyphen. 
+    
+    For a line like 'this is an example', the output would be:
+    n_gram=2 '_-this this-is is-an an-example example-_'
+    n_gram=3 '_-_-this _-this-is this-is-an is-an-example an-example-_ example-_-_'
+    
+    """
 
     n_grams = []
     words = line.split()
@@ -134,6 +150,15 @@ def add_n_grams(line, n_gram):
     return b' '.join(n_grams)
 
 def creating_n_grams_corpus(n_gram, corpus):
+    """
+    Input: 
+    n_gram: A number, HJELP desired number of maximum number of words grouped together?
+    corpus: A corpus
+    
+    
+    Output: 
+    new_corpus: A corpus, containing all word groups consisting of up to n_gram words. 
+    """
     new_corpus=[]
     
     for line in corpus:
@@ -160,5 +185,73 @@ def create_csv_submission(ids, y_pred, name):
         writer.writeheader()
         for r1, r2 in zip(ids, y_pred):
             writer.writerow({'Id':int(r1),'Prediction':int(r2)})
+
             
+def get_corpus(full=False, test=False, inputfiles=None):
+    
+    """
+    Input: 
+    full: if true, the retunred corpus contains all 2 510 000 tweets
+    test: if true, the returned corpus contains the 210 000 test- tweets. 
+    inputfiles: if any given, and test= False and full=Fase, the corpus will be created based on the given files. 
+    Must be given as: inputfiles=['filename.txt', 'filename2.txt'] or ['file.txt']. 
+    
+    Outputs: 
+    full_corpus: A corpus made of the desired files, 
+    nr_pos_tweets: If test of full or inputfiles with 3 files are given, nr_pos_tweets is the number of tweets in the first file
+    (which for test and full is the positive labeled tweets). Otherwise it is 0. 
+    nr_neg_tweets: If test of full or inputfiles with 3 files are given, nr_neg_tweets is the number of tweets in the second file
+    (which for test and full is the negative labeled tweets). Otherwise it is 0. 
+    total_training_tweets: The sum of the two above. 
+    
+    """
+    
+    training_set_pos = "train_pos.txt" 
+    training_set_neg = "train_neg.txt"
+    training_set_pos_full = "train_pos_full.txt"
+    training_set_neg_full = "train_neg_full.txt"
+    test_set = "test_data.txt"
+    if test:
+        inputfiles=[training_set_pos,training_set_neg,test_set]
+
+    elif full:
+        inputfiles=[training_set_pos_full,training_set_neg_full,test_set]
+    
+    if len(inputfiles)==3:
+
+        full_corpus, file_lengths=create_corpus(inputfiles)
+        nr_pos_tweets = file_lengths[0]
+        nr_neg_tweets = file_lengths[1]
+        total_training_tweets =file_lengths [0]+file_lengths[1]
+    else: 
+        nr_pos_tweets=0
+        nr_neg_tweets=0
+        total_training_tweets=0
+        
+    return full_corpus, nr_pos_tweets, nr_neg_tweets, total_training_tweets
+
+def get_global_vectors(dimension): 
+    """
+    Input: 
+    dimension: The desired dimension in the returned global vectors. can be 50,100 or 200. 
+    
+    Output: 
+    global_vectors: The pre-trained global vectors,with desired dimension, on the gensim object form. 
+    """
+    if dimension==50:
+        global_vectors=GV.make_glove("gensim_global_vectors_50dim.txt")
+    elif dimension ==100: 
+        global_vectors=GV.make_glove("gensim_global_vectors_100dim.txt")
+    elif dimension== 200: 
+        global_vectors=GV.make_glove("gensim_global_vectors_200dim.txt")
+    elif dimension==25: 
+        global_vectors=GV.make_glove("gensim_global_vectors_25dim.txt")
+    else: 
+        print('not valid dimension')
+        global_vectors=-1
+    return global_vectors     
+
+   
+            
+        
             
