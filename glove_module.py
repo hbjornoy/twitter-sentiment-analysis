@@ -122,29 +122,28 @@ def create_labels(total_training_tweets, nr_pos_tweets):
 
 
 def run_k_fold(models, X, Y, epochs, n_folds):
-    
-    #Needed to keep results reproducable 
+   
+    #Needed to keep results reproducable
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
-    
+   
     model_scores = []
     for neural_model in models:
-
+ 
         model_name = neural_model.__name__
-        
+       
         input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
         start = time.time()
-
+ 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
         cv_scores = []
         pos_scores = []
         neg_scores = []
         ratio_of_pos_guesses = []
-        
+       
         for train, test in kfold.split(X, Y):
-
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
             model = neural_model(input_dimensions)
             history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], validation_data=(X[test], Y[test]))
@@ -152,8 +151,8 @@ def run_k_fold(models, X, Y, epochs, n_folds):
 
             pred = model.predict(X[test])
             cv_scores.append(score)
-
-        
+ 
+       
             # To analyze if it is unbalanced classifying
             labels = Y[test]
             pos_right = 0
@@ -166,7 +165,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             ratio_of_pos_guesses.append(np.mean(np.round(np.array(pred)).astype(int)))
             pos_scores.append((pos_right / (len(labels) * 0.5))*100)
             neg_scores.append((neg_right / (len(labels) * 0.5))*100)
-
+ 
         print("Model: ", model_name)
         print(history)
         print(cv_scores)
@@ -174,14 +173,14 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
         print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
         print("Time taken: ", (time.time() - start) / 60, "\n")
-
+ 
         model_scores.append((np.mean(cv_scores), np.std(cv_scores)))
-      
+     
     return model_scores
 
-
-def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
-    model = tuned_model
+def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds, unseen_data):
+    model_config = tuned_model.get_config()
+    
     
     #Needed to keep results reproducable 
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
@@ -191,22 +190,24 @@ def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
     start = time.time()
     kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
     cv_scores = []
+    histories = []
     
     for train, test in kfold.split(X, Y):
-            early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+        model = keras.models.Sequential.from_config(model_config)
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
-                      validation_data=(X[test], Y[test]))
-            score = model.evaluate(X[test], Y[test], verbose=1)
-            #pred = model.predict(X[test])
-            cv_scores.append(score)
-    print("Accuracies: %.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
+        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
+                            validation_data=(X[test], Y[test]))
+        score = model.evaluate(X[test], Y[test], verbose=1)
+        pred = model.predict(X[test])
+        cv_scores.append(score) # end results of the
+        histories.append(history)
+    print("Accuracies: %.2f%% (+/- %.2f%%)" % (np.mean([cv_score[1] for cv_score in cv_scores]), 
+                                               np.std([cv_score[0] for cv_score in cv_scores])))
             
-    return model, cv_scores
-
+    return model, cv_scores, histories
     
-    
-
 
 def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.7):
     split_size = int(X.shape[0]*split)
@@ -218,27 +219,50 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.7):
     
     start = time.time()
     
-    cv_scores, model = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds)
-    #model.fit(train_x, train_y, epochs=epochs, batch_size=1024, verbose=1, validation_data=(val_x, val_y))
-    score = model.evaluate(val_x, val_y, verbose=0)
-    #pred = model.predict(val_x)
+    model, cv_scores, histories = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds)
+    
+    pred = model.predict(val_x)
+    
     
     print("cv_scores:", cv_scores)
     print("evaluation score:", score)
     print("Time taken: ", (time.time() - start) / 60, "\n")
     
-    return model, cv_scores
+    return model, cv_scores, histories
 
-
-
+def train_NN(model, allX, allY, epochs):
+    split_size = int(allX.shape[0]*0.90)
+    
+    train_x, unseen_x = allX[:split_size], allX[split_size:]
+    train_y, unseen_y = allY[:split_size], allY[split_size:]
+    
+    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+    start = time.time()
+    try:
+        while True:
+            prev_history = model.fit(train_x, train_y, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
+                                     validation_data=(unseen_x, unseen_y))
+            prev_model = model
+        
+    
+    except (KeyboardInterrupt, SystemExit):
+        return prev_model, prev_history
+        #raise
+    else:
+        print("why did this happen?")
+        print(prev_model, prev_history)
+        return prev_model, prev_history
+    
+    
+    
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
-
+ 
     num_of_dim = global_vectors.syn0.shape[1]
-
+ 
     # seperate traindata and testdata
-    train_corpus = processed_corpus[:total_training_tweets:] 
-    predict_corpus = processed_corpus[total_training_tweets::] 
-
+    train_corpus = processed_corpus[:total_training_tweets:]
+    predict_corpus = processed_corpus[total_training_tweets::]
+ 
     # Build a vector of all the words in a tweet
     vectors = np.zeros(len(train_corpus), dtype=object)
     for i, doc in enumerate(train_corpus):
@@ -249,10 +273,9 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
     train_document_vecs = sklearn.preprocessing.scale(train_document_vecs)
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
-
+ 
     model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
     return model_scores
-
 
 def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs):
     """
