@@ -8,6 +8,7 @@ personen(e) i parentes er bare et forslag, jeg bare vet at jeg ikke klarer å gj
 1. Etablere et basic neural netowork (bare for sammenligning) og VELGE ET NEURAL NETWORK (HÅVARD Thomas(?)) 
     husk de vil vi skal starte med enkel baseline, så vise at det blir bedre
     base kan godt være det som er utgangspunktet i håvards magiske algoritme... 
+1.2: SJEKKE N GRAMS- DETTE GIR IKKE BEDRE RESULTATER PR NÅ, DET ER RART.. 
 2. Med valgt neural network kjøre følgende: (Hvem som helst)
     - CV unprepro med self-trained 50, 100, 200
     - CV unprepro med pre-trained 50,100, 200
@@ -39,6 +40,7 @@ personen(e) i parentes er bare et forslag, jeg bare vet at jeg ikke klarer å gj
     - glove_solution, sh-filene, cooc, pickle vocab- fått fra skolen, gjort små endringer.. må kommenteres osv
     - data analysis (både py og notebook)- må sees over av en av dere to, osv
     - (hva annet skal vi levere, supert om vi blir enige om en liste)
+    - readme: husk versjoner, husk alle installerings 
 7. Lage RUN.PY
 8. VELGE KAGGLE SCORE (THOMAS- han er leder av laget)
 9. skrive abstrakt, fiske på intro, lese igjennom, gjøre ferdig rapporten
