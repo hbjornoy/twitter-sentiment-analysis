@@ -23,7 +23,6 @@ import helpers as HL
 
 from numpy.random import seed
 
-
 def create_gensim_word2vec_file(path_to_original_glove_file):
     """
     :param path_to_glove_folder: Go to Stanfords website https://nlp.stanford.edu/projects/glove/ and download their twitterdataset,
@@ -54,6 +53,7 @@ def get_dim_of_file(filename):
 
 
 def make_glove(path_to_gensim_global_vectors):
+    
     """
     uses the created gensim-.txt file to create the word2vec so one can operate on
 
@@ -62,6 +62,7 @@ def make_glove(path_to_gensim_global_vectors):
     :return: global vectors in the form of a list of words, with the words represented as vectors
             with length the same as the dimensions of the space
     """
+    
     glove_model = gensim.models.KeyedVectors.load_word2vec_format(path_to_gensim_global_vectors, binary=False)
 
     global_vectors = glove_model.wv
@@ -226,7 +227,7 @@ def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds, unseen_data):
         model = keras.models.Sequential.from_config(model_config)
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping], 
+        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=128, verbose=1, callbacks=[early_stopping], 
                             validation_data=(X[test], Y[test]))
         score = model.evaluate(X[test], Y[test], verbose=1)
         pred = model.predict(X[test])
