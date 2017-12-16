@@ -156,7 +156,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
         model = neural_model(input_dimensions)
         start = time.time()
  
-        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=True)
+        kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds)
         cv_scores = []
         pos_scores = []
         neg_scores = []
