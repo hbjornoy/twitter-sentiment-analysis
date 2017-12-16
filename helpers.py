@@ -78,6 +78,21 @@ def creating_n_grams_corpus(n_gram, corpus):
 
 """
 def add_n_grams(line, n_gram):
+    
+    """
+    Input: 
+    line: A tweet
+    n_gram: a number, the number of words that are to be grouped together
+    
+    Output: 
+    b' '.join(n_grams): A line, containing the words from the input line grouped together in groups consisting of n_grams words. 
+    Each group is separated by a space, the words within a group is separated by a hyphen. 
+    
+    For a line like 'this is an example', the output would be:
+    n_gram=2 '_-this this-is is-an an-example example-_'
+    n_gram=3 '_-_-this _-this-is this-is-an is-an-example an-example-_ example-_-_'
+    
+    """
 
     n_grams = []
     words = line.split()
