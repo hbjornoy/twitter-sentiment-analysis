@@ -80,24 +80,25 @@ def deep_HB_dropout(input_dimensions):
 
     model = keras.models.Sequential()
     model.add(Dense(150, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     model.add(Dense(100, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     model.add(Dense(80, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     model.add(Dense(40, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     model.add(Dense(20, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     model.add(Dense(40, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
     #model.add(Dense(1,kernel_initializer='random_uniform', bias_initializer='zeros'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
 
 
-def dynamic_dense(input_dimensions, width, depth, dropout_rate=0.1, activation='relu'):
+def dynamic_dense(input_dimensions, width, depth, dropout_rate=0.1, activation='relu', funnel=False):
+    """funnel should be between 1 and 0.5"""
     
     seed(1337)
     model = keras.models.Sequential()
@@ -105,6 +106,8 @@ def dynamic_dense(input_dimensions, width, depth, dropout_rate=0.1, activation='
     for layer_nr in range(0, depth):
         model.add(Dense(width, input_dim=input_dimensions, kernel_initializer='normal', activation=activation))
         model.add(Dropout(dropout_rate))
+        if funnel != False:
+            width = np.ceil(funnel*width)
     
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
