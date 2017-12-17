@@ -248,11 +248,8 @@ def get_dynamic_stopwords(corpus, MinDf, MaxDf,sublinearTF=True,useIDF=False):
             sublinear_tf = sublinearTF, # scale the term frequency in logarithmic scale
             use_idf = useIDF,
             
-            #token_pattern = ''
-            #decode_error = 'ignore'
             )
     vectorizer.fit_transform(corpus)
-    print("Size of Vocabulary:", len(vectorizer.vocabulary_))
     return vectorizer.stop_words_, vectorizer.vocabulary_
     
 

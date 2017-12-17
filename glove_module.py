@@ -348,7 +348,23 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
     model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
     return model_scores
 
-def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs):
+def shuffle_data(X, Y):
+    np.random.seed(1337)
+    shuffle_indexes = np.arange(X.shape[0])
+    np.random.shuffle(shuffle_indexes)
+    X = X[shuffle_indexes]
+    Y = Y[shuffle_indexes]
+    
+    return X, Y
+    
+def split_data(X, Y, split=0.8):
+    split_size = int(X.shape[0]*split)
+    train_x, val_x = X[:split_size], X[split_size:]
+    train_y, val_y = Y[:split_size], Y[split_size:]
+    
+    return train_x, val_x, train_y, val_y
+
+def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, split=0.8):
     """
     Input: 
     neural_net: Name of a neural net model 
@@ -369,20 +385,22 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     # Build a vector of all the words in a tweet
     train_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
     train_document_vecs = sk.preprocessing.scale(train_document_vecs)
+    labels = create_labels(total_training_tweets, nr_pos_tweets)
+    
+    train_document_vecs, labels = shuffle_data(train_document_vecs,labels)
+    train_x, val_x, train_y, val_y = split_data(train_document_vecs, labels, split)
     
     test_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
     test_document_vecs = sk.preprocessing.scale(test_document_vecs)
-
-    labels = create_labels(total_training_tweets, nr_pos_tweets)
     
     model_name = neural_net.__name__
     
     model = neural_net(num_of_dim)
     
-    early_stopping = keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
     model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_prediction_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
 
-    history = model.fit(train_document_vecs, labels, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint])
+    history = model.fit(train_x, train_y, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(val_x, val_y))
     
     model = load_model('best_neural_model_prediction_model.hdf5')
 
