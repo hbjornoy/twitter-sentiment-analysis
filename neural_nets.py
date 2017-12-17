@@ -98,16 +98,21 @@ def deep_HB_dropout(input_dimensions):
 
 
 def dynamic_dense(input_dimensions, width, depth, dropout_rate=0.1, activation='relu', funnel=False):
-    """funnel should be between 1 and 0.5"""
-    
+    """
+    This function is made to quikly generate a wide variaty of dense hidden layers.
+    It is used in the trial and error fase of figuring out the best parameters for our final model which is named XXXX
+    not compatible with current crossvalidation
+    """
+    # for reprodusable models
     seed(1337)
+    
     model = keras.models.Sequential()
-
+    # iterates through and adds layers to the model
     for layer_nr in range(0, depth):
         model.add(Dense(width, input_dim=input_dimensions, kernel_initializer='normal', activation=activation))
         model.add(Dropout(dropout_rate))
-        if funnel != False:
-            width = np.ceil(funnel*width)
+        if funnel is not False:
+            width = int(np.ceil(funnel*width))
     
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
