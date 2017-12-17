@@ -393,7 +393,7 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
    
     model = neural_net(num_of_dim)
    
-    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
     model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_prediction_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
  
     history = model.fit(train_x, train_y, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(val_x, val_y))
