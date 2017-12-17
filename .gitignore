@@ -113,3 +113,5 @@ gensim_global_vectors_50dim.txt
 gensim_global_vectors_25dim.txt
 *.hdf5
 best_neural_model_save.hdf5
+full_corpus_prepro_with_n2_and_all_other.pkl
+stopword100_corpus_n2_SHM_E_SN_H_HK.pkl
