@@ -272,26 +272,29 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     return model, cv_histories, histories
 
 def train_NN(model, allX, allY, epochs):
+    # Shuffling data in-place
+    np.random.seed(1337)
+    np.random.shuffle(allY)
+    np.random.seed(1337)
+    np.random.shuffle(allX)
     
-    train_document_vecs, labels = shuffle_data(allX,allY)
-    train_x, val_x, train_y, val_y = split_data(train_document_vecs, labels, split=0.80)
-    
+    # defining the split index of the data
+    split_size = int(allX.shape[0]*split)
+
     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-    model_checkpoint = keras.callbacks.ModelCheckpoint("DHA_BEST_dd_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+    model_checkpoint = keras.callbacks.ModelCheckpoint("train_NN_dynamic_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
     
     histories = []
     start = time.time()
     try:
         while True:
-            prev_history = model.fit(train_x, train_y, epochs=epochs, batch_size=5000, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(val_x, val_y))
+            prev_history = model.fit(allX[:split_size], allY[:split_size], epochs=epochs, batch_size=5000, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(allX[split_size:], allY[split_size:]))
             prev_model = model
             histories.append(prev_history) 
         
-    
     except (KeyboardInterrupt, SystemExit):
         print('\n\ntime spent training:', (time.time() - start))
         return prev_model, prev_history
-        #raise
     else:
         print("\n\nwhy did this happen?")
         print(prev_model, prev_history)
@@ -344,10 +347,9 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
 
 def shuffle_data(X, Y):
     np.random.seed(1337)
-    shuffle_indexes = np.arange(X.shape[0])
-    np.random.shuffle(shuffle_indexes)
-    X = X[shuffle_indexes]
-    Y = Y[shuffle_indexes]
+    np.random.shuffle(X)
+    np.random.seed(1337)
+    np.random.shuffle(Y)
    
     return X, Y
    
