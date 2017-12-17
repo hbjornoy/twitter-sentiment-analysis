@@ -10,13 +10,6 @@ personen(e) i parentes er bare et forslag, jeg bare vet at jeg ikke klarer å gj
     base kan godt være det som er utgangspunktet i håvards magiske algoritme... 
 1.2: SJEKKE N GRAMS- DETTE GIR IKKE BEDRE RESULTATER PR NÅ, DET ER RART.. 
 2. Med valgt neural network kjøre følgende: (Hvem som helst)
-    X CV unprepro med self-trained 50, 100, 200 
-    X CV unprepro med pre-trained 50,100, 200 
-        - dette er klart til kjøring (tror jeg) i compare_sef_pre_trained_word_vectors
-        - Hvilket neural net? et basic? Jeg stemmer for det- da er dette det basic nettet som vi etterpå gjør bedre!
-        (husk de vil vi skal ha baseline som blir bedre og bedre)
-    O CV med unrepro pre-trained 200 - variere antall epochs- plotte dette- bestemme antall epochs fra dette
-        - Lage egen fil for dette? stemmer litt for det- har lagd skallet til den: "determining epochs"
     - CV med alle steg prepro- med riktig antall epochs (følg notebook determining)
         - relativt klart i determining_preprocessing
     - CV, apply different thresholds in DS- tenkte ut en fin måte å presentere dette på.. 
@@ -29,19 +22,17 @@ personen(e) i parentes er bare et forslag, jeg bare vet at jeg ikke klarer å gj
 4. Skrive om tools i rapport (Thomas se på dette)
 5. Sette inn resulater i rapport- diskutere dette (Hedda)
 6. Rydde opp i kode (alle) 
-    - tokenizing.py (Hedda mener denne ser bra ut, men mulig vi skal gjøre små endinger)
-    - sammenslå cleaning og helpers?
-    - maketextfile- sjekk for feil i kode, men ellers ok
+    X tokenizing.py (Hedda mener denne ser bra ut, men mulig vi skal gjøre små endinger)
     - glove_module
-    - Comparing_sef_pre_trained_word_vectors
-    - train_glove.py (må lages, og inneholder alle steg som må gjøres for å få cooc.pkl)
-    - Determining preprocessing (må ryddes i osv)
-    - Determining Epochs (har begynt på, må gjøres ferdig.. )
+    H Determining preprocessing (må ryddes i osv)
     - neural nets- må ryddes/fikses/ferdigstilles
     - glove_solution, sh-filene, cooc, pickle vocab- fått fra skolen, gjort små endringer.. må kommenteres osv
-    - data analysis (både py og notebook)- må sees over av en av dere to, osv
+    X data analysis (både py og notebook)- må sees over av en av dere to, osv
+    - helpers - n_grams bør kanskje ryddes og fikses i en funksjon som er kommentert ut må slettes
     - (hva annet skal vi levere, supert om vi blir enige om en liste)
     - readme: husk versjoner, husk alle installerings 
+    
+
 7. Lage RUN.PY
 8. VELGE KAGGLE SCORE (THOMAS- han er leder av laget)
 9. skrive abstrakt, fiske på intro, lese igjennom, gjøre ferdig rapporten
