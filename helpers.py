@@ -211,6 +211,7 @@ def get_corpus(full=False, test=False, inputfiles=None):
     training_set_pos_full = "train_pos_full.txt"
     training_set_neg_full = "train_neg_full.txt"
     test_set = "test_data.txt"
+    
     if test:
         inputfiles=[training_set_pos,training_set_neg,test_set]
 
