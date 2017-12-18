@@ -271,7 +271,8 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     
     return model, cv_histories, histories
 
-def train_NN(model, allX, allY, epochs, split=0.8):
+
+def train_NN(model, allX, allY, epochs=100000, split=0.8):
     # Shuffling data in-place
     np.random.seed(1337)
     np.random.shuffle(allY)
@@ -284,21 +285,18 @@ def train_NN(model, allX, allY, epochs, split=0.8):
     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1)
     model_checkpoint = keras.callbacks.ModelCheckpoint("train_NN_dynamic_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
     
-    histories = []
+    history = []
     start = time.time()
     try:
-        while True:
-            prev_history = model.fit(allX[:split_size], allY[:split_size], epochs=epochs, batch_size=5000, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(allX[split_size:], allY[split_size:]))
-            prev_model = model
-            histories.append(prev_history) 
+        history = model.fit(allX[:split_size], allY[:split_size], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(allX[split_size:], allY[split_size:]))
         
     except (KeyboardInterrupt, SystemExit):
         print('\n\ntime spent training:', (time.time() - start))
-        return prev_model, prev_history
+        return model, history
     else:
         print("\n\nwhy did this happen?")
-        print(prev_model, prev_history)
-        return prev_model, prev_history
+        print(model, history)
+        return model, history
 
 def plot_history(history):
     """should make this to plot the history of epochs and validationscore
