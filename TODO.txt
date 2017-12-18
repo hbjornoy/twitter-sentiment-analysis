@@ -57,7 +57,13 @@ NAVN:  readme
 STATUS: 
 ANSVARLIG: Thomas
 
+NAVN:  run.py
+STATUS: ikke begynt på! regner med at det er ok å loade pickle i denne? kanskje også loade modell? vet ikke helt hva som er greit å ikke jeg.. 
+ANSVARLIG: Thomas (?) 
 
+NAVN:  (?) ferdig modell 
+STATUS: den finnes (?) 
+ANSVARLIG: Thomas (?)
 
 convention: 
 I starten av hver funskjon skriver vi: 
