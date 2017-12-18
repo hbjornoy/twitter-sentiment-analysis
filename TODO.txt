@@ -59,4 +59,20 @@ ANSVARLIG: Thomas
 
 
 
+convention: 
+I starten av hver funskjon skriver vi: 
+"""
+Inputs: 
+    input1: forklaring
+    input2: forklaring
+
+Outputs:
+    output1: forklaring
+    output2: forklaring
+    
+additional information if needed
+"""
+
+
+
 
