@@ -17,7 +17,7 @@ STATUS: skal kjøres i natt for å leveres med resultater
 ANSVARLIG: Hedda
 
 NAVN:  kaggle_submissions
-STATUS: adde inn pickle load setninger?, adde final neural net
+STATUS:  sørge for at navn på final neural net er riktig
 ANSVARLIG: X
 
 NAVN:  datanalysis.py
