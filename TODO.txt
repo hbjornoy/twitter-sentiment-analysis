@@ -62,11 +62,11 @@ ANSVARLIG: Thomas
 convention: 
 I starten av hver funskjon skriver vi: 
 """
-Inputs: 
+Input: 
     input1: forklaring
     input2: forklaring
 
-Outputs:
+Output:
     output1: forklaring
     output2: forklaring
     
