@@ -1,0 +1,62 @@
+1. Thomas kjører 3-fold CV med final neural net på det corpuset Hedda har pushet, setter resultatet inn i rapporten
+2. Thomas og Håvard leser igjennom rapporten, gjør eventuelle endringer, men holder seg innen 4 sider. 
+3. Thomas og Håvard rydder opp i kode som ikke er ryddet i
+4. Thomas skriver ferdig readme
+5. Vi tester at readme instruksjonene er nok
+6. Alle leser igjennom alt og sjekker at alt er flott
+
+
+FILER SOM SKAL LEVERES: 
+
+NAVN:  tokenizing.py
+STATUS: ferdig (hedda)
+ANSVARLIG: Hedda
+
+NAVN: preprocessing_on_test.ipynb
+STATUS: skal kjøres i natt for å leveres med resultater
+ANSVARLIG: Hedda
+
+NAVN:  kaggle_submissions
+STATUS: adde inn pickle load setninger?, adde final neural net
+ANSVARLIG: X
+
+NAVN:  datanalysis.py
+STATUS: ferdig
+ANSVARLIG: Hedda
+
+NAVN:  data_analysis.ipynb
+STATUS: ferdig
+ANSVARLIG: Hedda
+
+NAVN:  stopword100_corpus_n2_SHM_E_SN_H_HK.pkl (dette er fullt corpus ferdig prepro, ligger ikke på git)
+STATUS: fedig
+ANSVARLIG: Hedda
+
+NAVN:  test_best_prepro.pkl (dette er lite corpus ferdig prepro)
+STATUS: ferdig 
+ANSVARLIG: Hedda
+
+NAVN:  helpers.py
+STATUS: ferdig
+ANSVARLIG: Hedda
+
+
+NAVN:  neural_nets.py
+STATUS: 
+ANSVARLIG: 
+
+NAVN:  glove_module.py
+STATUS: 
+ANSVARLIG: 
+
+NAVN:  noe som viser ting fra hvordan vi fant det beste neural networket
+STATUS: 
+ANSVARLIG: Håvard 
+
+NAVN:  readme
+STATUS: 
+ANSVARLIG: Thomas
+
+
+
+
