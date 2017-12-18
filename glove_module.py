@@ -289,6 +289,8 @@ def train_NN(model, allX, allY, epochs=100000, split=0.8):
     try:
         history = model.fit(allX[:split_size], allY[:split_size], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(allX[split_size:], allY[split_size:]))
         
+        return model, history
+        
     except (KeyboardInterrupt, SystemExit):
         print('\n\ntime spent training:', (time.time() - start))
         return model, history
