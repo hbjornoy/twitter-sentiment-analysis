@@ -24,31 +24,31 @@ def preprocess_corpus(corpus,stemming=False,
                       ):
     """
     Input:
-    corpus: a corpus on the format as the output in creat_corpus
-    all_smilies: if true, same effect as if pos_smilies, neg_smilies, and other_smilies were true
-    pos_smilies: if true, positive smilies such as : ), : (, ; ), ( ;, :p, ;p, : p, are replaced by "possmiley"
-    neg_smilies: if true, negative smilies such as : (, ) : are replaced by "negsmiely"
-    other_smilies: if true, smilies such as ^_^ are replaced by a describing word. 
-    hugs_and_kisses: if true, words such as xxx xoxo etc are replaced by "kisses" or "hug" and "kisses". 
-    hearts: if true, "<3" are replaced by "heart"
-    hashtags: if true, hashtags are removed from the beginning of words, so #apple becomes apple. 
-    hashtag_mention: if true, and if hashtag is true, the word "hashatag" is added at the end of a tweet that used to contain
-    one or more words beginning with a hashtag. 
-    numbers: if true, words that are purely numbers are removed
-    number_mention: if true, and if number is true, the word "thereisanumber" is added at the end of a tweet that used to contain
-    one or more words that were purely numbers. 
-    exclamation: if true, the word "exclamation" is added at the end of a tweet that contain one or more "!". 
-    set_to_not: if true, all words ending with "n't" is replaced by not. 
-    segmentation_hash: if true, words starting with # that do not appear in the english dictionary is split into segments, 
-    eg '#iammoving' becomes 'i am moving'
-    spelling: if true, all words that are not a part of the english dictionary is set to the most likely word,
-    within two alterations
-    elongation: if true, the length of all sequences of letters in words that are not a part of the English dictionary 
-    is set to max 2. Before words that are altered because of this, the word 'elongation' appears. 
-    remove_signs: if true, signs such as ",", ".", ":", ";", "-", are removed. 
+        corpus: a corpus on the format as the output in creat_corpus
+        all_smilies: if true, same effect as if pos_smilies, neg_smilies, and other_smilies were true
+        pos_smilies: if true, positive smilies such as : ), : (, ; ), ( ;, :p, ;p, : p, are replaced by "possmiley"
+        neg_smilies: if true, negative smilies such as : (, ) : are replaced by "negsmiely"
+        other_smilies: if true, smilies such as ^_^ are replaced by a describing word. 
+        hugs_and_kisses: if true, words such as xxx xoxo etc are replaced by "kisses" or "hug" and "kisses". 
+        hearts: if true, "<3" are replaced by "heart"
+        hashtags: if true, hashtags are removed from the beginning of words, so #apple becomes apple. 
+        hashtag_mention: if true, and if hashtag is true, the word "hashatag" is added at the end of a tweet that used to contain
+            one or more words beginning with a hashtag. 
+        numbers: if true, words that are purely numbers are removed
+        number_mention: if true, and if number is true, the word "thereisanumber" is added at the end of a tweet that used 
+            to contain one or more words that were purely numbers. 
+        exclamation: if true, the word "exclamation" is added at the end of a tweet that contain one or more "!". 
+        set_to_not: if true, all words ending with "n't" is replaced by not. 
+        segmentation_hash: if true, words starting with # that do not appear in the english dictionary is split into segments, 
+            eg '#iammoving' becomes 'i am moving'
+        spelling: if true, all words that are not a part of the english dictionary is set to the most likely word,
+            within two alterations
+        elongation: if true, the length of all sequences of letters in words that are not a part of the English dictionary 
+            is set to max 2. Before words that are altered because of this, the word 'elongation' appears. 
+        remove_signs: if true, signs such as ",", ".", ":", ";", "-", are removed. 
     
     Output:
-    new_corpus: a new corpus, on same format as the input corpus. 
+        new_corpus: a new corpus, on same format as the input corpus. 
     """
    
     start = time.time()
@@ -233,14 +233,14 @@ def preprocess_corpus(corpus,stemming=False,
 def get_dynamic_stopwords(corpus, MinDf, MaxDf,sublinearTF=True,useIDF=False):
     """
     Input: 
-    corpus: A corpus, 
-    MinDf: as min_df in sklearns TfidVectorizer:
-    MaxDf: as max_df in sklearns TfidVectorizer:
-    sublinearTF: as sublinear_tf in sklearns TfidVectorizer:
-    useIDF: as use_idf in sklearns TfidVectorizer:
+        corpus: A corpus, 
+        MinDf: as min_df in sklearns TfidVectorizer:
+        MaxDf: as max_df in sklearns TfidVectorizer:
+        sublinearTF: as sublinear_tf in sklearns TfidVectorizer:
+        useIDF: as use_idf in sklearns TfidVectorizer:
     
     Output: 
-    vectorizer.stop_words_: A list of all words that should be removed form the corpus. 
+        vectorizer.stop_words_: A list of all words that should be removed form the corpus. 
     """
     vectorizer = TfidfVectorizer(
             min_df = MinDf,   # if between 0 and 1: percentage, if int: absolute value.
@@ -257,11 +257,11 @@ def get_dynamic_stopwords(corpus, MinDf, MaxDf,sublinearTF=True,useIDF=False):
 def remove_stopwords(corpus, custom_stop_words):
     """
     Input: 
-    corpus: A corpus 
-    custom_stop_words: A list of words that should be removed
+        corpus: A corpus 
+        custom_stop_words: A list of words that should be removed
     
-    outout: 
-    new_corpus: A new corpus, as 'corpus', but all words in custom_stop_words are removed
+    Output: 
+        new_corpus: A new corpus, as 'corpus', but all words in custom_stop_words are removed
     """
     
     new_corpus=[]
