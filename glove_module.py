@@ -271,7 +271,7 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     
     return model, cv_histories, histories
 
-def train_NN(model, allX, allY, epochs):
+def train_NN(model, allX, allY, epochs, split=0.8):
     # Shuffling data in-place
     np.random.seed(1337)
     np.random.shuffle(allY)
