@@ -43,11 +43,11 @@ ANSVARLIG: Hedda
 
 NAVN:  neural_nets.py
 STATUS: 
-ANSVARLIG: 
+ANSVARLIG: X
 
 NAVN:  glove_module.py
 STATUS: 
-ANSVARLIG: 
+ANSVARLIG: X
 
 NAVN:  noe som viser ting fra hvordan vi fant det beste neural networket
 STATUS: 
