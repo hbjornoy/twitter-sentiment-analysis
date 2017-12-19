@@ -41,53 +41,19 @@ def create_labels(nr_pos_lines,nr_neg_lines,kaggle=False):
     else:
         labels[nr_pos_lines:nr_lines_total]=0;
     return labels
-"""
-def add_n_grams(line, n_gram):
 
-    n_grams = []
-    temp=[]
-    words = line.split()
-    #n_grams.append(b''.join([b'_',b'-',words[0]]))
-    for i in range(len(words)-(n_gram)): 
-        temp=[]
-        index=i
-        if n_gram is not 1:
-            for j in range(n_gram):
-                temp.append(words[index])
-                if j is not (n_gram-1):
-                    temp.append(b'-')
-                index+=1
-            n_grams.append(b''.join(temp))
-        else: 
-            n_grams.append(b''.join([words[i]]))
-    #n_grams.append(b''.join([words[-1], b'-', b"_"]))
-    #n_grams.append(b''.join([words[-1]]))
-    return b' '.join(n_grams)
 
-def creating_n_grams_corpus(n_gram, corpus):
-    new_corpus=[]
-    
-    for line in corpus:
-        lines=[]
-        if line:
-            for i in range(n_gram):
-                new_line = add_n_grams(line, i+1)
-                lines.append(new_line)
-        new_corpus.append(b' '.join(lines))
-    
-    return new_corpus
-
-"""
 def add_n_grams(line, n_gram):
     
     """
     Input: 
-    line: A tweet
-    n_gram: a number, the number of words that are to be grouped together
+        line: A tweet
+        n_gram: a number, the number of words that are to be grouped together
     
     Output: 
-    b' '.join(n_grams): A line, containing the words from the input line grouped together in groups consisting of n_grams words. 
-    Each group is separated by a space, the words within a group is separated by a hyphen. 
+        b' '.join(n_grams): A line, containing the words from the input line grouped together 
+        in groups consisting of n_grams words. 
+        Each group is separated by a space, the words within a group is separated by a hyphen. 
     
     For a line like 'this is an example', the output would be:
     n_gram=2 '_-this this-is is-an an-example example-_'
@@ -153,12 +119,12 @@ def add_n_grams(line, n_gram):
 def creating_n_grams_corpus(n_gram, corpus):
     """
     Input: 
-    n_gram: A number, HJELP desired number of maximum number of words grouped together?
-    corpus: A corpus
+        n_gram: A number, HJELP desired number of maximum number of words grouped together?
+        corpus: A corpus
     
     
     Output: 
-    new_corpus: A corpus, containing all word groups consisting of up to n_gram words. 
+        new_corpus: A corpus, containing all word groups consisting of up to n_gram words. 
     """
     new_corpus=[]
     
@@ -175,6 +141,7 @@ def creating_n_grams_corpus(n_gram, corpus):
 
 def create_csv_submission(ids, y_pred, name):
     """
+    TAKEN FROM ML COURSE: https://github.com/epfml/ML_course/blob/master/projects/project1/scripts/proj1_helpers.py
     Creates an output file in csv format for submission to kaggle
     Arguments: ids (event ids associated with each prediction)
                y_pred (predicted class labels)
@@ -192,18 +159,18 @@ def get_corpus(full=False, test=False, inputfiles=None):
     
     """
     Input: 
-    full: if true, the retunred corpus contains all 2 510 000 tweets
-    test: if true, the returned corpus contains the 210 000 test- tweets. 
-    inputfiles: if any given, and test= False and full=Fase, the corpus will be created based on the given files. 
-    Must be given as: inputfiles=['filename.txt', 'filename2.txt'] or ['file.txt']. 
+        full: if true, the retunred corpus contains all 2 510 000 tweets
+        test: if true, the returned corpus contains the 210 000 test- tweets. 
+        inputfiles: if any given, and test= False and full=Fase, the corpus will be created based on the given files. 
+        Must be given as: inputfiles=['filename.txt', 'filename2.txt'] or ['file.txt']. 
     
     Outputs: 
-    full_corpus: A corpus made of the desired files, 
-    nr_pos_tweets: If test of full or inputfiles with 3 files are given, nr_pos_tweets is the number of tweets in the first file
-    (which for test and full is the positive labeled tweets). Otherwise it is 0. 
-    nr_neg_tweets: If test of full or inputfiles with 3 files are given, nr_neg_tweets is the number of tweets in the second file
-    (which for test and full is the negative labeled tweets). Otherwise it is 0. 
-    total_training_tweets: The sum of the two above. 
+        full_corpus: A corpus made of the desired files, 
+        nr_pos_tweets: If test of full or inputfiles with 3 files are given, nr_pos_tweets is the number of tweets in
+        the first file (which for test and full is the positive labeled tweets). Otherwise it is 0. 
+        nr_neg_tweets: If test of full or inputfiles with 3 files are given, nr_neg_tweets is the number of tweets in 
+        the second file (which for test and full is the negative labeled tweets). Otherwise it is 0. 
+        total_training_tweets: The sum of the two above. 
     
     """
     
@@ -234,10 +201,10 @@ def get_corpus(full=False, test=False, inputfiles=None):
 def get_global_vectors(dimension): 
     """
     Input: 
-    dimension: The desired dimension in the returned global vectors. can be 50,100 or 200. 
+        dimension: The desired dimension in the returned global vectors. can be 50,100 or 200. 
     
     Output: 
-    global_vectors: The pre-trained global vectors,with desired dimension, on the gensim object form. 
+        global_vectors: The pre-trained global vectors,with desired dimension, on the gensim object form. 
     """
     if dimension==50:
         global_vectors=GV.make_glove("gensim_global_vectors_50dim.txt")
