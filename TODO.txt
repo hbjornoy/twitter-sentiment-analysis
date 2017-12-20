@@ -5,8 +5,6 @@
 5. Vi tester at readme instruksjonene er nok
 6. Alle leser igjennom alt og sjekker at alt er flott
 
-- Sjekk om vi bruker create labels i helpers.. 
-
 FILER SOM SKAL LEVERES: 
 
 NAVN:  tokenizing.py
@@ -40,7 +38,6 @@ ANSVARLIG: Hedda
 NAVN:  helpers.py
 STATUS: ferdig
 ANSVARLIG: Hedda
-
 
 NAVN:  neural_nets.py
 STATUS: 

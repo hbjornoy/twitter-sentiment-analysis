@@ -84,91 +84,6 @@ def create_glove_model(path_to_gensim_global_vectors):
 
     return global_vectors
 
-"""
-
-def buildDocumentVector(tokens, size, model):
-
-    vec = np.zeros(size).reshape((1, size))
-    count = 0
-    
-    for word in tokens.split():
-        try:
-            word = word.decode('utf-8')
-            word_vec = model[word].reshape((1, size))
-            #idf_weighted_vec = word_vec * tfidf_dict[word]
-            vec += word_vec
-            count += 1
-            
-        except KeyError: # handling the case where the token is not in the corpus. useful for testing.
-            if len(word.split('_')) > 1:
-                word_vec = [0] * size
-                p_count = 0
-                
-                for part in word.split('_'):
-                    try:
-                        part_vec = model[part].reshape((1, size))
-                        if np.any(np.isinf(part_vec)):
-                            print("part that contains inf", part)
-                            print(part_vec[0:3])
-                        word_vec += part_vec
-                        p_count += 1
-                        
-                    except KeyError:
-                        continue
-                        
-                if p_count != 0:
-                    word_vec /= p_count
-                vec += word_vec
-                count += 1
-            else:
-                continue
-
-    if count != 0:
-        vec /= count
-    return vec
-
-
-def buildDocumentVector(tokens, size, model):
-
-    vec = float(np.zeros(size).reshape((1, size)))
-    count = 0
-    
-    for word in tokens.split():
-        try:
-            word = word.decode('utf-8')
-            word_vec = model[word].reshape((1, size))
-            #idf_weighted_vec = word_vec * tfidf_dict[word]
-            vec += word_vec
-            count += 1
-            
-        except KeyError: # handling the case where the token is not in the corpus. useful for testing.
-            if len(word.split('_')) > 1:
-                word_vec = [0] * size
-                p_count = 0
-                
-                for part in word.split('_'):
-                    try:
-                        part_vec = model[part].reshape((1, size))
-                        word_vec += part_vec
-                        p_count += 1
-                        
-                    except:
-                        continue
-                        
-                if p_count != 0:
-                    word_vec /= p_count
-                
-                
-                vec += word_vec
-                count += 1
-            else:
-                continue
-
-    if count != 0:
-        vec /= count
-    return vec
-    
-"""
 
 def buildDocumentVector(document, vec_dimention, word_embedding_model):
     
@@ -274,8 +189,6 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
         input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
 
-        
-
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds)
         
         cv_scores = []
@@ -312,7 +225,7 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
         print("Model: ", model_name)
         print("%.2f%% (+/- %.2f%%)" % (model_mean, model_std))
  
-        model_scores.append([model_mean, model_std])
+        model_scores.append(model_mean, model_std)
      
     return model_scores
 
