@@ -26,7 +26,7 @@ In order to run the whole preprocessing and other project components, the follow
 - Enchant V: 2.0.0 ( mac / linux only ) 
   - Run: pip install pyenchant
   - NB: No version for Python on 64-bit windows. Run on a OSX/Linux-machine.
-  - NB: This is only used for the enchant word-dictionary, and can be exchanged with another dictionary if running on windows is wanted.
+  - NB: This is only used for the enchant word-dictionary, in ´tokenizing.py´, a step of the pre-processing and can be exchanged with another dictionary if running on windows is wanted. Without utalizing another dictionary, you're only hindered from running the pre-processing. We reffer the reader du use the pickled pre-processed corpus defined below.
   
 ### Files downloaded and used in this project
 
