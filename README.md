@@ -1,4 +1,4 @@
-### Project Text Sentiment Classification DESCRIPTION
+## Project Text Sentiment Classification 
 
 The task of this project is to predict if a tweet message used to contain a positive :) or negative :( smiley, by considering only the remaining text! 
 
