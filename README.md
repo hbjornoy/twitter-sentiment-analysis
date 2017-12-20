@@ -23,17 +23,17 @@ In order to run the whole preprocessing and other project components, the follow
   - NB: Will take some time on first import to download "Word statistics files". 
 
 
-### Downloadable files needed
+### Downloadable files needed.
 
-- Gensim word vectors 
-    - Downloading gensim word vecs here: [JKDIEOJADIWJPADJOP]("www.bt.no")
+All downloaded files should be placed in the root project folder.
+
+- Download Glove word vectors word vecs from [Standford Twitter Glove]("http://nlp.stanford.edu/data/glove.twitter.27B.zip")
+- Download training and test dataset from [Kaggle]("https://www.kaggle.com/c/epfml17-text/data")
 
 
-## Explain RUN file 
+### Explain RUN file 
 
-#PLAN: 
-- Make new anaconda environment and find needed packages 
-- Write about it
+Fork or download zip of repository, and run the `run.py` from terminal with `Python run.py`. This pruduces the file `powerpuffz_kagglescore.csv` in the root folder. 
 
 
 
