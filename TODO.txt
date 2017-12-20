@@ -46,7 +46,7 @@ STATUS:
 ANSVARLIG: X
 
 NAVN:  glove_module.py
-STATUS: 
+STATUS: må ryddes, må fjerne alle imports som ikke brues, må fjerne alt som ikke brukes, fikse det som printes ut så det er pent og fornuftig, gjøre at patience blir et input ettersom vi varierer det med 3 og 10, 
 ANSVARLIG: X
 
 NAVN:  noe som viser ting fra hvordan vi fant det beste neural networket
@@ -67,7 +67,7 @@ ANSVARLIG: Thomas (?)
 
 convention: 
 I starten av hver funskjon skriver vi: 
-"""
+""" Hva funskjonen gjør
 Input: 
     input1: forklaring
     input2: forklaring
@@ -75,8 +75,6 @@ Input:
 Output:
     output1: forklaring
     output2: forklaring
-    
-additional information if needed
 """
 
 
