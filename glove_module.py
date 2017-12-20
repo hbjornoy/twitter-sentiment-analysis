@@ -287,7 +287,6 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
 
 
             model_checkpoint = model_checkpoint_callback("best_neural_model_save.hdf5", verbose_=1)
-
             
             model = neural_model(input_dimensions)
             
