@@ -11,17 +11,17 @@ In order to run `RUN.py` some packages with their dependencies are required. We 
 
 In order to run the whole preprocessing and other project components, the following packages with their dependencies are required:
 
-#### NLTK V: 3.2.5 
+- NLTK V: 3.2.5 
 
-#### Enchant V: 2.0.0 ( mac / linux only ) 
-- Run: pip install pyenchant
-- No version for Python on 64-bit windows. Run on a OSX/Linux-machine.
-- This is only used for the enchant word-dictionary, and can be exchanged with another dictionary if running on windows is wanted.
+- Enchant V: 2.0.0 ( mac / linux only ) 
+  - Run: pip install pyenchant
+  - No version for Python on 64-bit windows. Run on a OSX/Linux-machine.
+  - This is only used for the enchant word-dictionary, and can be exchanged with another dictionary if running on windows is wanted.
  
-#### Ekphrasis
-- pip install ekphrasis. 
-- V: 0.3.6 
-- Will take some time on first import to download "Word statistics files". 
+- Ekphrasis
+  - pip install ekphrasis. 
+  - V: 0.3.6 
+  - Will take some time on first import to download "Word statistics files". 
 
 
 ### Downloadable files needed
