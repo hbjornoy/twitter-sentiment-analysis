@@ -211,13 +211,13 @@ def get_global_vectors(dimension):
         global_vectors: The pre-trained global vectors,with desired dimension, on the gensim object form. 
     """
     if dimension==50:
-        global_vectors=GV.make_glove("gensim_global_vectors_50dim.txt")
+        global_vectors=GV.create_glove_model("gensim_global_vectors_50dim.txt")
     elif dimension ==100: 
-        global_vectors=GV.make_glove("gensim_global_vectors_100dim.txt")
+        global_vectors=GV.create_glove_model("gensim_global_vectors_100dim.txt")
     elif dimension== 200: 
-        global_vectors=GV.make_glove("gensim_global_vectors_200dim.txt")
+        global_vectors=GV.create_glove_model("gensim_global_vectors_200dim.txt")
     elif dimension==25: 
-        global_vectors=GV.make_glove("gensim_global_vectors_25dim.txt")
+        global_vectors=GV.create_glove_model("gensim_global_vectors_25dim.txt")
     else: 
         print('not valid dimension')
         global_vectors=-1

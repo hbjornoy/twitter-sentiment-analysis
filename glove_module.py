@@ -1,28 +1,31 @@
 
-import random as rn
-from keras import backend as K
-import tensorflow as tf
+#import random as rn
+#from keras import backend as K
+#import tensorflow as tf
+#from gensim.scripts.glove2word2vec import glove2word2vec
+#import gensim
+#import time
+#import sklearn as sk
+#import sklearn.preprocessing
+#from sklearn import model_selection
+#import numpy as np
+#import keras
+#import neural_nets as NN
+#import tensorflow as tf
+#import random as rn
+#from keras import backend as K
+#from keras.models import load_model
+#import re
+#import os
 
-from gensim.scripts.glove2word2vec import glove2word2vec
-import gensim
-import time
-import sklearn as sk
-import sklearn.preprocessing
-from sklearn import model_selection
-import numpy as np
-import keras
-import neural_nets as NN
-import tensorflow as tf
-import random as rn
-from keras import backend as K
-from keras.models import load_model
-import re
-import os
+#import helpers as HL
 
-import helpers as HL
+import keras.callbacks
 
-"""
-SYNES GENERELT AT DETTE BØR DELES OPP I MANGE PENE SMÅ FUNKSJONER, ALT SOM IKKE BRUKES MÅ FJERNES 
+
+""" 
+TODO:
+- Remove imports not used
 """
 
 from numpy.random import seed
@@ -34,11 +37,12 @@ def create_gensim_word2vec_file(path_to_original_glove_file):
     
     Input:
         path_to_original_glove_file: Path to the glove files downloaded from the 
-   
     """
-
+    
     for filename in os.listdir(path_to_original_glove_file):
+        
         if filename.endswith(".txt"):
+            
             filepath = os.path.join(path_to_original_glove_file, filename)
             dim = get_dim_of_file(filename)
             name_of_filecreated = "gensim_global_vectors_"+ dim + "dim.txt"
@@ -65,7 +69,7 @@ def get_dim_of_file(filename):
     return dim
 
 
-def make_glove(path_to_gensim_global_vectors):
+def create_glove_model(path_to_gensim_global_vectors):
     """
     Uses the created gensim-.txt file to create the word2vec so one can operate on
     
@@ -104,9 +108,8 @@ def buildDocumentVector(document, vec_dimention, word_embedding_model):
         try:
             word = word.decode('utf-8')
             word_vec = word_embedding_model[word].reshape((1, vec_dimention))
-            if(word_vec): 
-                document_vec += word_vec
-                count += 1
+            document_vec += word_vec
+            count += 1
             
         except KeyError: 
             
@@ -139,81 +142,91 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
     word_vec = [0] * vec_dimention
     partial_count = 0
+    try: 
+        for part in n_gram.split('_'):
+            try:
+                part_vec = word_embedding_model[part].reshape((1, vec_dimention))
+                word_vec += part_vec
+                partial_count += 1
 
-    for part in n_gram.split('_'):
-        try:
-            part_vec = word_embedding_model[part].reshape((1, vec_dimention))
-            word_vec += part_vec
-            partial_count += 1
+            except KeyError:
+                continue
 
-        except KeyError:
-            continue
+        if partial_count != 0:
+            word_vec /= partial_count
+            return word_vec
 
-    if partial_count != 0:
-        word_vec /= partial_count
-        return word_vec
-        
-    return None
-
-#def create_labels(total_training_tweets, nr_pos_tweets):
+        return None
     
-#    """
-#    THIS IS BAD CODE AND SHOULD BE FIXED:
-#    should just get the labels directly..
-#    TROR IKKE VI BRUKER DENNE?
-#    """
-#    # Making labels
-#    labels = np.zeros(total_training_tweets)
-#    labels[0:nr_pos_tweets] = 1
-#    labels[nr_pos_tweets:total_training_tweets] = 0
-#    return labels
+    except:
+        return None
 
-
-def run_k_fold(models, X, Y, epochs, n_folds):
+def run_k_fold(models, X, Y, epochs, n_folds, patience):
+    
+    """
+    Runs K-fold cross validation on the neural net models given as parameter models. 
+    
+    Input: 
+        models: A list of names for neural net models defined in neural_nets.py
+        X: Training set 
+        Y: Labels 
+        epochs: Max number of epochs to run each model in each k-fold
+        n_folds: Number of folds for the k-fold algorithm
+        
+    Output:
+        model_scores: A list of tuples containing mean and std for each model run 
+            thorugh the k-fold cross validation.
+    """
    
-    #Needed to keep results reproducable
+    #Need to set Keras-session in order to keep results reproducable
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
-    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
-    K.set_session(sess)
+    session = tf.Session(graph=tf.get_default_graph(), config=session_conf)
+    K.set_session(session)
     
     model_scores = []
+    
     for neural_model in models:
  
         model_name = neural_model.__name__
-       
-        input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
 
+        input_dimensions = X.shape[1]
+
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds)
+        
         cv_scores = []
-        pos_scores = []
-        neg_scores = []
-        ratio_of_pos_guesses = []
        
         for train, test in kfold.split(X, Y):
             
-            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1)
-            
-            model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_save.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+            # Defining callbacks to be used under fitting process
+            early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
+            model_checkpoint_callback = model_checkpoint_callback("best_neural_model_save.hdf5"):
             
             model = neural_model(input_dimensions)
             
-            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(x_test, y_test))
+            model.fit(
+                X[train], 
+                Y[train], 
+                epochs=epochs, 
+                batch_size=1024, 
+                verbose=1, 
+                callbacks=[early_stopping_callback, model_checkpoint_callback], 
+                validation_data=(x_test, y_test)
+            )
             
+            #Load best model stored during fitting of model
             model = load_model('best_neural_model_save.hdf5')
             
             score = model.evaluate(X[test], Y[test], verbose=1)[1]
-            
-            print("Unseen score:", score)
-
-            pred = model.predict(X[test])
-            
             cv_scores.append(score)
- 
+        
+        model_mean = np.mean(cv_scores)
+        model_std = np.std(cv_scores)
+        
         print("Model: ", model_name)
-        print("%.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
+        print("%.2f%% (+/- %.2f%%)" % (model_mean, model_std))
  
-        model_scores.append((np.mean(cv_scores), np.std(cv_scores)))
+        model_scores.append(model_mean, model_std)
      
     return model_scores
 
@@ -234,13 +247,14 @@ def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
     ratio_of_pos_guesses = []
     
     for train, test in kfold.split(X, Y):
-        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=1)
-        model_checkpoint = keras.callbacks.ModelCheckpoint("best_dd_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+        early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
+        model_checkpoint = ModelCheckpoint("best_dd_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
         
         model = keras.models.Sequential.from_config(model_config)
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
         history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
+        
         score = model.evaluate(X[test], Y[test], verbose=0)
         cv_scores.append(score) # end results of the cv
         histories.append(history)
@@ -291,8 +305,8 @@ def train_NN(model, allX, allY, epochs=100000, split=0.8):
     # defining the split index of the data
     split_size = int(allX.shape[0]*split)
 
-    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-    model_checkpoint = keras.callbacks.ModelCheckpoint("train_NN_dynamic_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+    model_checkpoint = ModelCheckpoint("train_NN_dynamic_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
     
     history = []
     start = time.time()
@@ -352,7 +366,21 @@ def split_data(X, Y, split=0.8):
    
     return train_x, val_x, train_y, val_y
 
+def model_checkpoint_callback(save_filename):
+    
+    return ModelCheckpoint(
+        "best_neural_model_save.hdf5",
+        monitor='val_loss',
+        verbose=1, 
+        save_best_only=True,
+        save_weights_only=False, m
+        ode='auto'
+    )
 
+def early_stopping_callback(val_to_monitor_, patience_, verbose_):
+    
+    return EarlyStopping(monitor=val_to_monitor_, patience=patience_, verbose = verbose_)
+    
 def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, split=0.8):
     """ Creates a csv file with kaggle predictions and returns the predictions.
     Input:
@@ -387,8 +415,8 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
    
     model = neural_net(num_of_dim)
    
-    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
-    model_checkpoint = keras.callbacks.ModelCheckpoint("best_neural_model_prediction_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10)
+    model_checkpoint = ModelCheckpoint("best_neural_model_prediction_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
  
     history = model.fit(train_x, train_y, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(val_x, val_y))
    
