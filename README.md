@@ -15,20 +15,18 @@ In order to run the whole preprocessing and other project components, the follow
 
 - Enchant V: 2.0.0 ( mac / linux only ) 
   - Run: pip install pyenchant
-  - No version for Python on 64-bit windows. Run on a OSX/Linux-machine.
-  - This is only used for the enchant word-dictionary, and can be exchanged with another dictionary if running on windows is wanted.
+  - NB: No version for Python on 64-bit windows. Run on a OSX/Linux-machine.
+  - NB: This is only used for the enchant word-dictionary, and can be exchanged with another dictionary if running on windows is wanted.
  
-- Ekphrasis
-  - pip install ekphrasis. 
-  - V: 0.3.6 
-  - Will take some time on first import to download "Word statistics files". 
+- Ekphrasis V: 0.3.6 
+  - Run: pip install ekphrasis. 
+  - NB: Will take some time on first import to download "Word statistics files". 
 
 
 ### Downloadable files needed
 
-#### Gensim word vectors 
-
-- Downloading gensim word vecs here: [JKDIEOJADIWJPADJOP]("www.bt.no")
+- Gensim word vectors 
+    - Downloading gensim word vecs here: [JKDIEOJADIWJPADJOP]("www.bt.no")
 
 
 ## Explain RUN file 
