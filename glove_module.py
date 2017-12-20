@@ -3,12 +3,12 @@
 #from keras import backend as K
 #import tensorflow as tf
 #from gensim.scripts.glove2word2vec import glove2word2vec
-#import gensim
+import gensim
 #import time
 #import sklearn as sk
 #import sklearn.preprocessing
 #from sklearn import model_selection
-#import numpy as np
+import numpy as np
 #import keras
 #import neural_nets as NN
 #import tensorflow as tf
@@ -200,7 +200,7 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
             
             # Defining callbacks to be used under fitting process
             early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
-            model_checkpoint_callback = model_checkpoint_callback("best_neural_model_save.hdf5"):
+            model_checkpoint_callback = model_checkpoint_callback("best_neural_model_save.hdf5")
             
             model = neural_model(input_dimensions)
             
@@ -373,8 +373,8 @@ def model_checkpoint_callback(save_filename):
         monitor='val_loss',
         verbose=1, 
         save_best_only=True,
-        save_weights_only=False, m
-        ode='auto'
+        save_weights_only=False, 
+        mode='auto'
     )
 
 def early_stopping_callback(val_to_monitor_, patience_, verbose_):
