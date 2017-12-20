@@ -60,6 +60,5 @@ def dynamic_dense(input_dimensions, width, depth, dropout_rate=0.1, activation='
     model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
-       
     
     
