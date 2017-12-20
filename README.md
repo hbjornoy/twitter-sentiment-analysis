@@ -2,12 +2,12 @@
 
 In order to run `RUN.py` some packages with their dependencies are required. We recommend creating a clean Anaconda Environment, and installing the following packages via Anaconda Navigator:
 
-#### Python V: 3.6.3
-#### Numpy V: 1.12.1
-#### Keras V: 2.0.8 
-#### Tensorflow V: 1.2.1
-#### Scikit-learn V: 0.19.1
-#### Gensim  V: 3.1.0
+- Python V: 3.6.3
+- Numpy V: 1.12.1
+- Keras V: 2.0.8 
+- Tensorflow V: 1.2.1
+- Scikit-learn V: 0.19.1
+- Gensim  V: 3.1.0
 
 In order to run the whole preprocessing and other project components, the following packages with their dependencies are required:
 
