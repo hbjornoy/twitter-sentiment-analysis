@@ -51,6 +51,7 @@ All downloaded files should be placed in the root project folder.
     - dataanalysis.py
     - neural_nets.py
     - glove_module.py
+    - validation_and_prediction: 
 
 #### Pickled files
     - stopword_100_corpus_N2_SHN_E_SN_H_HK.pkl
