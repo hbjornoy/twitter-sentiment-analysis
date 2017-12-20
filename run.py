@@ -23,4 +23,4 @@ prediction = [1 if i > 0.5 else -1 for i in prediction]
 ids = list(range(1,10000+1))
 HL.create_csv_submission(ids, prediction,'powerpuffz_kagglescore.csv')
 
-input("\n","Predictions made: powerpuffz_kagglescore.csv", "\n", "Press any key to exit...")
+print("Prediction created - powerpuffz_kagglescore.csv")
