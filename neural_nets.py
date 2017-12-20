@@ -13,6 +13,9 @@ from numpy.random import seed
 
 def basic_model_adam(input_dimensions):
     
+    """
+    """
+    
     seed(1337)
 
     model = keras.models.Sequential()
@@ -26,7 +29,6 @@ def complex_model(input_dimensions):
     """
     This is our final neural net model that provided the best result. It is made through trial and error experimentation.
     """
-    
     # for reprodusable models
     seed(1337)
     

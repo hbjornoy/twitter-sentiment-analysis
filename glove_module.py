@@ -229,87 +229,141 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
      
     return model_scores
 
-def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds, patience_):
+
+    
+def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds,patience=3):
     
     """
     
-    TODO 
-    
     """
+ 
+    num_of_dim = global_vectors.syn0.shape[1]
+ 
+    # seperate traindata and testdata
+    train_corpus = processed_corpus[:total_training_tweets:]
+    predict_corpus = processed_corpus[total_training_tweets::]
+ 
+    # Build a vector representation of all documents in corpus
+    vectors = np.zeros(len(train_corpus), dtype=object)
+    for i, doc in enumerate(train_corpus):
+        if (i % 50000) == 0:
+            print("tweets processed: %.0f  of total number of tweets: %.0f" % (i,len(train_corpus)))
+        vectors[i] = buildDocumentVector(doc, num_of_dim, global_vectors)
     
-    #Needed to keep results reproducable 
-    session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
-    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
-    K.set_session(sess)
-    
-    model_config = tuned_model.get_config()
-        
-    kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=False)
-    
-    cv_scores = []
-    histories = []
-    
-    for train, test in kfold.split(X, Y):
-        
-        #Defining callbacks to use during model fitting
-        early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
-        model_checkpoint_callback = model_checkpoint_callback("best_dd_model.hdf5", verbose=1)
-        
-        model = keras.models.Sequential.from_config(model_config)
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    train_document_vecs = np.concatenate(vectors)
+    train_document_vecs = sklearn.preprocessing.scale(train_document_vecs)
 
-        history = model.fit(
-            X[train],
-            Y[train], 
-            epochs=epochs, 
-            batch_size=1024, 
-            verbose=1, 
-            callbacks=[early_stopping_callback, model_checkpoint_callback], 
-            validation_data=(X[test], Y[test])
-        )
-        
-        histories.append(history)
-        
-        score = model.evaluate(X[test], Y[test], verbose=0)
-        cv_scores.append(score)
-        
-    print("Val_accuracies: %.2f%% (+/- %.4f)" % (np.mean([cv_score[1]*100 for cv_score in cv_scores]), 
-                                               np.std([cv_score[1]*100 for cv_score in cv_scores])))     
+    labels = HL.create_labels(nr_pos_tweets, nr_pos_tweets)
+ 
+    model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds,patience)
     
-    return model, cv_scores, histories
-    
+    return model_scores
 
-def testing_for_dd(tuned_model, X, Y, epochs, n_folds, patience_, split=0.9):
+
+def shuffle_data(X, Y):
     
-    split_size = int(X.shape[0]*split)
-    
-    # randomize
     np.random.seed(1337)
-    shuffle_indexes = np.arange(X.shape[0])
-    np.random.shuffle(shuffle_indexes)
+    np.random.shuffle(X)
+    np.random.seed(1337)
+    np.random.shuffle(Y)
+   
+    return X, Y
+   
     
-    X = X[shuffle_indexes]
-    Y = Y[shuffle_indexes]
-    
-    train_x, unseen_x = X[:split_size], X[split_size:]
-    train_y, unseen_y = Y[:split_size], Y[split_size:]
-    
-    models = []
-    cv_history = []
-    histories = []
-    
-    start = time.time()
-    model, cv_histories, histories = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds, patience_)
-    
-    train_score = model.evaluate(train_x, train_y)
-    unseen_score = model.evaluate(unseen_x, unseen_y)
-    print("evaluate on train_data: (loss:%.5f , acc:%.3f%%):" % (train_score[0], train_score[1]*100))
-    print("Unseen_accuracies: (loss:%.4f , acc:%.4f%%):" % (unseen_score[0], unseen_score[1]*100))
-    print("Time taken: ", (time.time() - start) / 60, "\n")
-    
-    return model, cv_histories, histories
+def split_data(X, Y, split=0.8):
+    split_size = int(X.shape[0]*split)
+    train_x, val_x = X[:split_size], X[split_size:]
+    train_y, val_y = Y[:split_size], Y[split_size:]
+   
+    return train_x, val_x, train_y, val_y
 
 
+def model_checkpoint_callback(save_filename, verbose_,):
+    
+    return keras.callbacks.ModelCheckpoint(
+        "best_neural_model_save.hdf5",
+        monitor='val_loss',
+        verbose=verbose_, 
+        save_best_only=True,
+        save_weights_only=False, 
+        mode='auto'
+    )
+
+
+def early_stopping_callback(patience_, verbose_):
+    
+    return keras.callbacks.EarlyStopping(
+        monitor='val_loss', 
+        patience=patience_,
+        verbose = verbose_
+    )
+    
+    
+def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, patience, split=0.8):
+    """ Creates a csv file with kaggle predictions and returns the predictions.
+    Input:
+        neural_net: Name of a neural net model
+        global_vectors: global vectors created out the gensim-.txt files.
+        total_training_tweets: (int) Number of tweets that are training tweets. Assums that the first poriton of the corpus is
+        training tweets, the second part is the unseen test set.
+        nr_pos_tweets: (int) number of traning tweets that are positiv
+        kaggle_name: Name for csv file, must end in '.csv'.
+   
+    Output:
+        pred_ones: the predicions (1 or -1)
+        a .csv file with name 'kaggle_name'
+    """
+    num_of_dim = global_vectors.syn0.shape[1]
+    
+    # seperate traindata and testdata
+    train_corpus = full_corpus[:total_training_tweets:]
+    predict_corpus = full_corpus[total_training_tweets::]
+    
+    # Build a vector of all the words in a tweet
+    train_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
+    train_document_vecs = sk.preprocessing.scale(train_document_vecs)
+    
+    labels = HL.create_labels(nr_pos_tweets, nr_pos_tweets, kaggle=False)
+       
+    train_document_vecs, labels = shuffle_data(train_document_vecs,labels)
+    train_x, val_x, train_y, val_y = split_data(train_document_vecs, labels, split)
+       
+    test_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
+    test_document_vecs = sk.preprocessing.scale(test_document_vecs)
+   
+    model = neural_net(num_of_dim)
+    
+    # Defining callbacks to be used under fitting process
+    early_stopping = early_stopping_callback(patience_=patience, verbose_=1)
+    model_checkpoint = model_checkpoint_callback("neural_model_prediction.hdf5", verbose_=1)
+    
+    history = model.fit(
+        train_x,
+        train_y,
+        epochs=epochs,
+        batch_size=1024,
+        verbose=1,
+        callbacks=[early_stopping, model_checkpoint],
+        validation_data=(val_x, val_y)
+    )
+   
+    # Loading the best model found during training
+    model = load_model('neural_model_prediction.hdf5')
+ 
+    prediction = model.predict(test_document_vecs)
+   
+    prediction = [1 if i > 0.5 else -1 for i in prediction]
+           
+    # Creating prediction
+    ids = list(range(1,10000+1))
+    HL.create_csv_submission(ids, prediction,kaggle_name)
+ 
+    return prediction
+
+
+
+
+# KEEP - USED IN EXPERIMENTAL PHASE 
 def train_NN(model, allX, allY, patience_, epochs=100000, split=0.8):
     
     # Shuffling data in-place
@@ -348,123 +402,3 @@ def train_NN(model, allX, allY, patience_, epochs=100000, split=0.8):
         print("\n\nwhy did this happen?")
         print(model, history)
         return model, history
-
-    
-    
-def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds,patience=3):
- 
-    num_of_dim = global_vectors.syn0.shape[1]
- 
-    # seperate traindata and testdata
-    train_corpus = processed_corpus[:total_training_tweets:]
-    predict_corpus = processed_corpus[total_training_tweets::]
- 
-    # Build a vector of all the words in a tweet
-    vectors = np.zeros(len(train_corpus), dtype=object)
-    for i, doc in enumerate(train_corpus):
-        if (i % 50000) == 0:
-            print("tweets processed: %.0f  of total number of tweets: %.0f" % (i,len(train_corpus)))
-        vectors[i] = buildDocumentVector(doc, num_of_dim, global_vectors)
-    
-    train_document_vecs = np.concatenate(vectors)
-    train_document_vecs = sklearn.preprocessing.scale(train_document_vecs)
-
-    labels = HL.create_labels(nr_pos_tweets, nr_pos_tweets)
- 
-    model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds,patience)
-    
-    return model_scores
-
-
-def shuffle_data(X, Y):
-    np.random.seed(1337)
-    np.random.shuffle(X)
-    np.random.seed(1337)
-    np.random.shuffle(Y)
-   
-    return X, Y
-   
-    
-def split_data(X, Y, split=0.8):
-    split_size = int(X.shape[0]*split)
-    train_x, val_x = X[:split_size], X[split_size:]
-    train_y, val_y = Y[:split_size], Y[split_size:]
-   
-    return train_x, val_x, train_y, val_y
-
-def model_checkpoint_callback(save_filename, verbose_,):
-    
-    return keras.callbacks.ModelCheckpoint(
-        "best_neural_model_save.hdf5",
-        monitor='val_loss',
-        verbose=verbose_, 
-        save_best_only=True,
-        save_weights_only=False, 
-        mode='auto'
-    )
-
-def early_stopping_callback(patience_, verbose_):
-    
-    return keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience_, verbose = verbose_)
-    
-def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, patience, split=0.8):
-    """ Creates a csv file with kaggle predictions and returns the predictions.
-    Input:
-        neural_net: Name of a neural net model
-        global_vectors: global vectors created out the gensim-.txt files.
-        total_training_tweets: (int) Number of tweets that are training tweets. Assums that the first poriton of the corpus is
-        training tweets, the second part is the unseen test set.
-        nr_pos_tweets: (int) number of traning tweets that are positiv
-        kaggle_name: Name for csv file, must end in '.csv'.
-   
-    Output:
-        pred_ones: the predicions (1 or -1)
-        a .csv file with name 'kaggle_name'
-    """
-    num_of_dim = global_vectors.syn0.shape[1]
-    
-    # seperate traindata and testdata
-    train_corpus = full_corpus[:total_training_tweets:]
-    predict_corpus = full_corpus[total_training_tweets::]
-    
-    # Build a vector of all the words in a tweet
-    train_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
-    train_document_vecs = sk.preprocessing.scale(train_document_vecs)
-    
-    labels = HL.create_labels(nr_pos_tweets, nr_pos_tweets, kaggle=True)
-       
-    train_document_vecs, labels = shuffle_data(train_document_vecs,labels)
-    train_x, val_x, train_y, val_y = split_data(train_document_vecs, labels, split)
-       
-    test_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
-    test_document_vecs = sk.preprocessing.scale(test_document_vecs)
-   
-    model_name = neural_net.__name__
-    model = neural_net(num_of_dim)
-    
-    # Defining callbacks to be used under fitting process
-    early_stopping = early_stopping_callback(patience_=patience, verbose_=1)
-    model_checkpoint = model_checkpoint_callback("best_neural_model_prediction_model.hdf5", verbose_=1)
-    
-    history = model.fit(
-        train_x,
-        train_y,
-        epochs=epochs,
-        batch_size=1024,
-        verbose=1,
-        callbacks=[early_stopping, model_checkpoint],
-        validation_data=(val_x, val_y)
-    )
-   
-    # Loading the best model found during training
-    model = load_model('best_neural_model_prediction_model.hdf5')
- 
-    prediction = model.predict(test_document_vecs)
-   
-    prediction = [1 if i > 0.5 else -1 for i in prediction]
-           
-    #CREATING SUBMISSION
-    ids = list(range(1,10000+1))
-    HL.create_csv_submission(ids, prediction,kaggle_name)
- 
-    return prediction
