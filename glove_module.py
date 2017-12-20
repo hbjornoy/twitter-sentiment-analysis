@@ -114,9 +114,11 @@ def buildWordVector(tokens, size, model):
 
 
 def create_labels(total_training_tweets, nr_pos_tweets):
+    
     """
     THIS IS BAD CODE AND SHOULD BE FIXED:
     should just get the labels directly..
+    TROR IKKE VI BRUKER DENNE?
     """
     # Making labels
     labels = np.zeros(total_training_tweets)
@@ -183,7 +185,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             
             cv_scores.append(score)
  
-            # To analyze if it is unbalanced classifying
+            # To analyze if it is unbalanced classifying (SLETTE ALT DETTE)
             labels = Y[test]
             pos_right = 0
             neg_right = 0
@@ -302,7 +304,7 @@ def train_NN(model, allX, allY, epochs=100000, split=0.8):
 def plot_history(history):
     """should make this to plot the history of epochs and validationscore
     maybe even the crossvalidation mean of at each epoch? smoothen out the graph :)
-    
+    BRUKER VI DENNE? I SÅ FALL MÅ VI SKRIVE OM SEABORN I READ ME
     - make history into dataframe that fits seaborn
     - epoch on the x axis
     - score on the y axix (0-1)
@@ -362,18 +364,18 @@ def split_data(X, Y, split=0.8):
 
 
 def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, split=0.8):
-    """
+    """ Creates a csv file with kaggle predictions and returns the predictions.
     Input:
-    neural_net: Name of a neural net model
-    global_vectors: global vectors created out the gensim-.txt files.
-    total_training_tweets: (int) Number of tweets that are training tweets. Assums that the first poriton of the corpus is
-    training tweets, the second part is the unseen test set.
-    nr_pos_tweets: (int) number of traning tweets that are positiv
-    kaggle_name: Name for csv file, must end in '.csv'.
+        neural_net: Name of a neural net model
+        global_vectors: global vectors created out the gensim-.txt files.
+        total_training_tweets: (int) Number of tweets that are training tweets. Assums that the first poriton of the corpus is
+        training tweets, the second part is the unseen test set.
+        nr_pos_tweets: (int) number of traning tweets that are positiv
+        kaggle_name: Name for csv file, must end in '.csv'.
    
     Output:
-    pred_ones: the predicions (1 or -1)
-    - a .csv file with name 'kaggle_name'
+        pred_ones: the predicions (1 or -1)
+        a .csv file with name 'kaggle_name'
     """
     num_of_dim = global_vectors.syn0.shape[1]
     # seperate traindata and testdata
