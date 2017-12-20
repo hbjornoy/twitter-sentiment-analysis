@@ -38,20 +38,23 @@ All downloaded files should be placed in the root project folder.
 
 ### Files included in this repository 
 
-#### Notebooks:
+#### Notebooks
     - Preprocessing_on_test.ipynb: This notebook is used to determine best preprosessing.   
     - Data_analysis.ipynb: This notebook contains preliminary data analysis.  
     - Kaggle_submissions.ipynb: This notebook contains code needed to make predictions for the unseen test set from scratch, or from pickles.    
 
-  - run.py:__ Run this file to reproduce the predictions, as explained above.     
+#### Python files
+- run.py:__ Run this file to reproduce the predictions, as explained above.     
 - tokenizing.py
 - helpers.py
 - dataanalysis.py
 - neural_nets.py
 - glove_module.py
 
+#### Pickled files
 - stopword_100_corpus_N2_SHN_E_SN_H_HK.pkl
 - test_best_prepro.pkl 
 - final_document_vectors.plk
 
+#### Neural net models
 - final_model_for_kaggle.hdf5 
