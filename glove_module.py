@@ -18,12 +18,10 @@ from keras import backend as K
 from keras.models import load_model
 import re
 import os
-import seaborn as sb
 
 import helpers as HL
 
 from numpy.random import seed
-
 
 def create_gensim_word2vec_file(path_to_original_glove_file):
     """
