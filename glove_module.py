@@ -1,27 +1,25 @@
 
 #import random as rn
-#from keras import backend as K
+from keras import backend as K
 #import tensorflow as tf
 #from gensim.scripts.glove2word2vec import glove2word2vec
 import gensim
 #import time
-#import sklearn as sk
-#import sklearn.preprocessing
+import sklearn as sk
+import sklearn.preprocessing
 #from sklearn import model_selection
 import numpy as np
-#import keras
+import keras
 #import neural_nets as NN
 #import tensorflow as tf
 #import random as rn
-#from keras import backend as K
 #from keras.models import load_model
 #import re
 #import os
 
-#import helpers as HL
+import helpers as HL
 
-import keras.callbacks
-
+import keras.callbacks.EarlyStopping
 
 """ 
 TODO:
@@ -127,8 +125,49 @@ def buildDocumentVector(tokens, size, model):
     if count != 0:
         vec /= count
     return vec
-
 """
+
+def buildDocumentVector(tokens, size, model):
+
+    vec = float(np.zeros(size).reshape((1, size)))
+    count = 0
+    
+    for word in tokens.split():
+        try:
+            word = word.decode('utf-8')
+            word_vec = model[word].reshape((1, size))
+            #idf_weighted_vec = word_vec * tfidf_dict[word]
+            vec += word_vec
+            count += 1
+            
+        except KeyError: # handling the case where the token is not in the corpus. useful for testing.
+            if len(word.split('_')) > 1:
+                word_vec = [0] * size
+                p_count = 0
+                
+                for part in word.split('_'):
+                    try:
+                        part_vec = model[part].reshape((1, size))
+                        word_vec += part_vec
+                        p_count += 1
+                        
+                    except:
+                        continue
+                        
+                if p_count != 0:
+                    word_vec /= p_count
+                
+                
+                vec += word_vec
+                count += 1
+            else:
+                continue
+
+    if count != 0:
+        vec /= count
+    return vec
+
+
 def buildDocumentVector(document, vec_dimention, word_embedding_model):
     
     Builds a vector representation of each document(tweet) of the given dimention, by finding the mean of all word vectors.
@@ -298,7 +337,7 @@ def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds, patience_):
         
         #Defining callbacks to use during model fitting
         early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
-        model_checkpoint_callback = model_checkpoint_callback("best_dd_model.hdf5", verbose=1):
+        model_checkpoint_callback = model_checkpoint_callback("best_dd_model.hdf5", verbose=1)
         
         model = keras.models.Sequential.from_config(model_config)
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
@@ -355,7 +394,7 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, patience_, split=0.9):
     return model, cv_histories, histories
 
 
-def train_NN(model, allX, allY, epochs=100000, split=0.8, patience_):
+def train_NN(model, allX, allY, patience_, epochs=100000, split=0.8):
     
     # Shuffling data in-place
     np.random.seed(1337)
@@ -448,11 +487,11 @@ def model_checkpoint_callback(save_filename, verbose_,):
         mode='auto'
     )
 
-def early_stopping_callback(val_to_monitor_, patience_, verbose_):
+def early_stopping_callback(patience_, verbose_):
     
-    return EarlyStopping(monitor=val_to_monitor_, patience=patience_, verbose = verbose_)
+    return EarlyStopping(monitor='val_loss', patience=patience_, verbose = verbose_)
     
-def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, split=0.8, patience=patience_):
+def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, patience, split=0.8):
     """ Creates a csv file with kaggle predictions and returns the predictions.
     Input:
         neural_net: Name of a neural net model
@@ -476,7 +515,7 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     train_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
     train_document_vecs = sk.preprocessing.scale(train_document_vecs)
     
-    labels = create_labels(total_training_tweets, nr_pos_tweets)
+    labels = HL.create_labels(total_training_tweets, nr_pos_tweets, kaggle=True)
    
     train_document_vecs, labels = shuffle_data(train_document_vecs,labels)
     train_x, val_x, train_y, val_y = split_data(train_document_vecs, labels, split)
@@ -488,17 +527,16 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     model = neural_net(num_of_dim)
     
     # Defining callbacks to be used under fitting process
-    early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
-    model_checkpoint_callback = model_checkpoint_callback("best_neural_model_prediction_model.hdf5", verbose=1)
+    early_stopping = early_stopping_callback(patience_=patience, verbose_=1)
+    model_checkpoint = model_checkpoint_callback("best_neural_model_prediction_model.hdf5", verbose_=1)
     
- 
     history = model.fit(
         train_x,
         train_y,
         epochs=epochs,
         batch_size=1024,
         verbose=1,
-        callbacks=[early_stopping_callback, model_checkpoint_callback],
+        callbacks=[early_stopping, model_checkpoint],
         validation_data=(val_x, val_y)
     )
    
