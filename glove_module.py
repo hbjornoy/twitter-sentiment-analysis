@@ -19,7 +19,6 @@ import keras
 
 import helpers as HL
 
-import keras.callbacks.EarlyStopping
 
 """ 
 TODO:
@@ -85,6 +84,7 @@ def create_glove_model(path_to_gensim_global_vectors):
 
     return global_vectors
 
+"""
 def buildDocumentVector(tokens, size, model):
 
     vec = np.zeros(size).reshape((1, size))
@@ -125,7 +125,7 @@ def buildDocumentVector(tokens, size, model):
     if count != 0:
         vec /= count
     return vec
-"""
+
 
 def buildDocumentVector(tokens, size, model):
 
@@ -167,9 +167,11 @@ def buildDocumentVector(tokens, size, model):
         vec /= count
     return vec
 
+""" 
 
 def buildDocumentVector(document, vec_dimention, word_embedding_model):
     
+    """
     Builds a vector representation of each document(tweet) of the given dimention, by finding the mean of all word vectors.
     
     Input:
@@ -179,7 +181,8 @@ def buildDocumentVector(document, vec_dimention, word_embedding_model):
         
     Output:
         A vector representing a tweet, using the mean of the word embeddings. 
-
+    """
+    
     document_vec = np.zeros(vec_dimention).reshape((1, vec_dimention))
     count = 0
     
@@ -207,7 +210,7 @@ def buildDocumentVector(document, vec_dimention, word_embedding_model):
 
 def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
-    
+    """
     Builds a vector representation for an n_gram of the given dimention, 
            by finding the mean of all word vectors.
     Input:
@@ -217,7 +220,7 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
    
     Output:
         A vector representing an n_gram, using the mean of the sub_word embeddings. 
-    
+    """
     
     word_vec = [0] * vec_dimention
     partial_count = 0
@@ -478,7 +481,7 @@ def split_data(X, Y, split=0.8):
 
 def model_checkpoint_callback(save_filename, verbose_,):
     
-    return ModelCheckpoint(
+    return keras.callbacks.ModelCheckpoint(
         "best_neural_model_save.hdf5",
         monitor='val_loss',
         verbose=verbose_, 
@@ -489,7 +492,7 @@ def model_checkpoint_callback(save_filename, verbose_,):
 
 def early_stopping_callback(patience_, verbose_):
     
-    return EarlyStopping(monitor='val_loss', patience=patience_, verbose = verbose_)
+    return keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience_, verbose = verbose_)
     
 def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, patience, split=0.8):
     """ Creates a csv file with kaggle predictions and returns the predictions.
@@ -515,11 +518,11 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     train_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
     train_document_vecs = sk.preprocessing.scale(train_document_vecs)
     
-    labels = HL.create_labels(total_training_tweets, nr_pos_tweets, kaggle=True)
-   
+    labels = HL.create_labels(nr_pos_tweets, nr_pos_tweets, kaggle=True)
+       
     train_document_vecs, labels = shuffle_data(train_document_vecs,labels)
     train_x, val_x, train_y, val_y = split_data(train_document_vecs, labels, split)
-   
+       
     test_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
     test_document_vecs = sk.preprocessing.scale(test_document_vecs)
    
