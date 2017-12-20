@@ -197,10 +197,22 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
 
 
 
-
-
-# KEEP - USED IN EXPERIMENTAL PHASE 
 def train_NN(model, allX, allY, patience_, epochs=100000, split=0.8):
+
+    """
+    Method used when exploring different topolgies for netural networks. Not utalized in final deliveries. 
+    
+    Input:
+        - model: Neural net model 
+        - allX: Complete corpus
+        - allY: Labels
+        - patience_: Patience for the early stopping callback used in the model fitting
+        - epochs: Max number of epochs for the neural model
+        - split: The train/test ratio for the validation. 
+    Output:
+        - model: The trained neural network model
+        - history: The history log of the model training     
+    """
     
     # Shuffling data in-place
     np.random.seed(1337)
