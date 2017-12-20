@@ -43,6 +43,24 @@ def create_labels(nr_pos_lines,nr_neg_lines,kaggle=False):
     return labels
 
 
+def shuffle_data(X, Y):
+    
+    np.random.seed(1337)
+    np.random.shuffle(X)
+    np.random.seed(1337)
+    np.random.shuffle(Y)
+   
+    return X, Y
+
+
+def split_data(X, Y, split=0.8):
+    split_size = int(X.shape[0]*split)
+    train_x, val_x = X[:split_size], X[split_size:]
+    train_y, val_y = Y[:split_size], Y[split_size:]
+   
+    return train_x, val_x, train_y, val_y
+
+
 def add_n_grams(line, n_gram):
     
     """ Help function to creating_n_grams_corpus. Adds the n-grams to each tweet. 
