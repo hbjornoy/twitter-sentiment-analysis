@@ -39,10 +39,14 @@ All downloaded files should be placed in the root project folder.
 ### Files included in this repository 
 
 - run.py
-
-- Kaggle_submissions.ipynb 
+  - Run this file to reproduce the predictions, as explained above.
+  
+- Kaggle_submissions.ipynb
+  - This notebook contains code needed to make predictions for the unseen test set from scratch, or from pickles. 
 - Preprocessing_on_test.ipynb
+  - This notebook is used to determine best preprosessing. 
 - Data_analysis.ipynb
+  - This notebook contains preliminary data analysis.
 
 - tokenizing.py
 - helpers.py
