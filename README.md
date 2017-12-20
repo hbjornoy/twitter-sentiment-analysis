@@ -45,17 +45,17 @@ All downloaded files should be placed in the root project folder.
       unseen test set from scratch, or from pickles.    
 
 #### Python files
-- run.py:__ Run this file to reproduce the predictions, as explained above.     
-- tokenizing.py
-- helpers.py
-- dataanalysis.py
-- neural_nets.py
-- glove_module.py
+    - run.py: Run this file to reproduce the predictions, as explained above.     
+    - tokenizing.py
+    - helpers.py
+    - dataanalysis.py
+    - neural_nets.py
+    - glove_module.py
 
 #### Pickled files
-- stopword_100_corpus_N2_SHN_E_SN_H_HK.pkl
-- test_best_prepro.pkl 
-- final_document_vectors.plk
+    - stopword_100_corpus_N2_SHN_E_SN_H_HK.pkl
+    - test_best_prepro.pkl 
+    - final_document_vectors.plk
 
 #### Neural net models
-- final_model_for_kaggle.hdf5 
+    - final_model_for_kaggle.hdf5 
