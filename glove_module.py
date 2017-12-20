@@ -87,9 +87,50 @@ def create_glove_model(path_to_gensim_global_vectors):
 
     return global_vectors
 
+def buildDocumentVector(tokens, size, model):
+
+    vec = np.zeros(size).reshape((1, size))
+    count = 0
+    
+    for word in tokens.split():
+        try:
+            word = word.decode('utf-8')
+            word_vec = model[word].reshape((1, size))
+            #idf_weighted_vec = word_vec * tfidf_dict[word]
+            vec += word_vec
+            count += 1
+            
+        except KeyError: # handling the case where the token is not in the corpus. useful for testing.
+            if len(word.split('_')) > 1:
+                word_vec = [0] * size
+                p_count = 0
+                
+                for part in word.split('_'):
+                    try:
+                        part_vec = model[part].reshape((1, size))
+                        if np.any(np.isinf(part_vec)):
+                            print("part that contains inf", part)
+                            print(part_vec[0:3])
+                        word_vec += part_vec
+                        p_count += 1
+                        
+                    except KeyError:
+                        continue
+                        
+                if p_count != 0:
+                    word_vec /= p_count
+                vec += word_vec
+                count += 1
+            else:
+                continue
+
+    if count != 0:
+        vec /= count
+    return vec
+
+"""
 def buildDocumentVector(document, vec_dimention, word_embedding_model):
     
-    """ 
     Builds a vector representation of each document(tweet) of the given dimention, by finding the mean of all word vectors.
     
     Input:
@@ -99,7 +140,6 @@ def buildDocumentVector(document, vec_dimention, word_embedding_model):
         
     Output:
         A vector representing a tweet, using the mean of the word embeddings. 
-    """
 
     document_vec = np.zeros(vec_dimention).reshape((1, vec_dimention))
     count = 0
@@ -128,7 +168,7 @@ def buildDocumentVector(document, vec_dimention, word_embedding_model):
 
 def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
-    """
+    
     Builds a vector representation for an n_gram of the given dimention, 
            by finding the mean of all word vectors.
     Input:
@@ -138,7 +178,7 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
    
     Output:
         A vector representing an n_gram, using the mean of the sub_word embeddings. 
-    """
+    
     
     word_vec = [0] * vec_dimention
     partial_count = 0
@@ -160,7 +200,8 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
     except:
         return None
-
+"""
+    
 def run_k_fold(models, X, Y, epochs, n_folds, patience):
     
     """
@@ -200,7 +241,10 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
             
             # Defining callbacks to be used under fitting process
             early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
-            model_checkpoint_callback = model_checkpoint_callback("best_neural_model_save.hdf5")
+
+
+            model_checkpoint_callback = model_checkpoint_callback("best_neural_model_save.hdf5", verbose=1)
+
             
             model = neural_model(input_dimensions)
             
@@ -230,49 +274,65 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
      
     return model_scores
 
-def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds):
+def crossvalidation_for_dd(tuned_model, X, Y, epochs, n_folds, patience_):
+    
+    """
+    
+    TODO 
+    
+    """
+    
     #Needed to keep results reproducable 
     session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
     
     model_config = tuned_model.get_config()
-    
-    start = time.time()
+        
     kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds, shuffle=False)
+    
     cv_scores = []
     histories = []
-    pos_scores = []
-    neg_scores = []
-    ratio_of_pos_guesses = []
     
     for train, test in kfold.split(X, Y):
-        early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
-        model_checkpoint = ModelCheckpoint("best_dd_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+        
+        #Defining callbacks to use during model fitting
+        early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
+        model_checkpoint_callback = model_checkpoint_callback("best_dd_model.hdf5", verbose=1):
         
         model = keras.models.Sequential.from_config(model_config)
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(X[test], Y[test]))
+        history = model.fit(
+            X[train],
+            Y[train], 
+            epochs=epochs, 
+            batch_size=1024, 
+            verbose=1, 
+            callbacks=[early_stopping_callback, model_checkpoint_callback], 
+            validation_data=(X[test], Y[test])
+        )
         
-        score = model.evaluate(X[test], Y[test], verbose=0)
-        cv_scores.append(score) # end results of the cv
         histories.append(history)
         
+        score = model.evaluate(X[test], Y[test], verbose=0)
+        cv_scores.append(score)
+        
     print("Val_accuracies: %.2f%% (+/- %.4f)" % (np.mean([cv_score[1]*100 for cv_score in cv_scores]), 
-                                               np.std([cv_score[1]*100 for cv_score in cv_scores])))
-    print("Time taken: ", (time.time() - start) / 60, "\n")
-            
+                                               np.std([cv_score[1]*100 for cv_score in cv_scores])))     
+    
     return model, cv_scores, histories
     
 
-def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
+def testing_for_dd(tuned_model, X, Y, epochs, n_folds, patience_, split=0.9):
+    
     split_size = int(X.shape[0]*split)
     
     # randomize
     np.random.seed(1337)
     shuffle_indexes = np.arange(X.shape[0])
     np.random.shuffle(shuffle_indexes)
+    
     X = X[shuffle_indexes]
     Y = Y[shuffle_indexes]
     
@@ -284,7 +344,7 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     histories = []
     
     start = time.time()
-    model, cv_histories, histories = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds)
+    model, cv_histories, histories = crossvalidation_for_dd(tuned_model, train_x, train_y , epochs, n_folds, patience_)
     
     train_score = model.evaluate(train_x, train_y)
     unseen_score = model.evaluate(unseen_x, unseen_y)
@@ -295,7 +355,8 @@ def testing_for_dd(tuned_model, X, Y, epochs, n_folds, split=0.9):
     return model, cv_histories, histories
 
 
-def train_NN(model, allX, allY, epochs=100000, split=0.8):
+def train_NN(model, allX, allY, epochs=100000, split=0.8, patience_):
+    
     # Shuffling data in-place
     np.random.seed(1337)
     np.random.shuffle(allY)
@@ -304,14 +365,24 @@ def train_NN(model, allX, allY, epochs=100000, split=0.8):
     
     # defining the split index of the data
     split_size = int(allX.shape[0]*split)
-
-    early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-    model_checkpoint = ModelCheckpoint("train_NN_dynamic_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+    
+     # Defining callbacks to be used under fitting process
+    early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
+    model_checkpoint_callback = model_checkpoint_callback("train_NN_dynamic_model.hdf5", verbose=1)
     
     history = []
     start = time.time()
+    
     try:
-        history = model.fit(allX[:split_size], allY[:split_size], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(allX[split_size:], allY[split_size:]))
+        history = model.fit(
+            allX[:split_size], 
+            allY[:split_size], 
+            epochs=epochs, 
+            batch_size=1024, 
+            verbose=1,
+            callbacks=[early_stopping_callback, model_checkpoint_callback], 
+            validation_data=(allX[split_size:], allY[split_size:])
+        )
         
         return model, history
         
@@ -366,12 +437,12 @@ def split_data(X, Y, split=0.8):
    
     return train_x, val_x, train_y, val_y
 
-def model_checkpoint_callback(save_filename):
+def model_checkpoint_callback(save_filename, verbose_,):
     
     return ModelCheckpoint(
         "best_neural_model_save.hdf5",
         monitor='val_loss',
-        verbose=1, 
+        verbose=verbose_, 
         save_best_only=True,
         save_weights_only=False, 
         mode='auto'
@@ -381,7 +452,7 @@ def early_stopping_callback(val_to_monitor_, patience_, verbose_):
     
     return EarlyStopping(monitor=val_to_monitor_, patience=patience_, verbose = verbose_)
     
-def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, split=0.8):
+def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweets, nr_pos_tweets,kaggle_name, epochs, split=0.8, patience=patience_):
     """ Creates a csv file with kaggle predictions and returns the predictions.
     Input:
         neural_net: Name of a neural net model
@@ -396,9 +467,11 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
         a .csv file with name 'kaggle_name'
     """
     num_of_dim = global_vectors.syn0.shape[1]
+    
     # seperate traindata and testdata
     train_corpus = full_corpus[:total_training_tweets:]
     predict_corpus = full_corpus[total_training_tweets::]
+    
     # Build a vector of all the words in a tweet
     train_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
     train_document_vecs = sk.preprocessing.scale(train_document_vecs)
@@ -412,29 +485,34 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     test_document_vecs = sk.preprocessing.scale(test_document_vecs)
    
     model_name = neural_net.__name__
-   
     model = neural_net(num_of_dim)
-   
-    early_stopping = EarlyStopping(monitor='val_loss', patience=10)
-    model_checkpoint = ModelCheckpoint("best_neural_model_prediction_model.hdf5", monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=False, mode='auto')
+    
+    # Defining callbacks to be used under fitting process
+    early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
+    model_checkpoint_callback = model_checkpoint_callback("best_neural_model_prediction_model.hdf5", verbose=1)
+    
  
-    history = model.fit(train_x, train_y, epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(val_x, val_y))
+    history = model.fit(
+        train_x,
+        train_y,
+        epochs=epochs,
+        batch_size=1024,
+        verbose=1,
+        callbacks=[early_stopping_callback, model_checkpoint_callback],
+        validation_data=(val_x, val_y)
+    )
    
+    # Loading the best model found during training
     model = load_model('best_neural_model_prediction_model.hdf5')
  
-    pred=model.predict(test_document_vecs)
+    prediction = model.predict(test_document_vecs)
    
-    pred_ones=[]
-    for i in pred:
-        if i> 0.5:
-            pred_ones.append(1)
-        else:
-            pred_ones.append(-1)
+    prediction = [1 if i > 0.5 else -1 for i in prediction]
            
     #CREATING SUBMISSION
     ids = list(range(1,10000+1))
-    HL.create_csv_submission(ids, pred_ones,kaggle_name)
+    HL.create_csv_submission(ids, prediction,kaggle_name)
  
-    return pred_ones
+    return prediction
 
 
