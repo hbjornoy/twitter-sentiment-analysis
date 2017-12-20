@@ -82,8 +82,6 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
     return model_scores
 
 
-    
-
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds,patience=3):
     
     """
