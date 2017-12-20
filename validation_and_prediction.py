@@ -77,7 +77,7 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
         print("Model: ", model_name)
         print("%.2f%% (+/- %.2f%%)" % (model_mean, model_std))
  
-        model_scores.append(model_mean, model_std)
+        model_scores.append([model_mean, model_std])
      
     return model_scores
 
