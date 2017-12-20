@@ -46,17 +46,16 @@ All downloaded files should be placed in the root project folder.
 
 #### Python files
     - run.py: Run this file to reproduce the predictions, as explained above.     
-    - tokenizing.py
-    - helpers.py
-    - dataanalysis.py
-    - neural_nets.py
-    - glove_module.py
-    - validation_and_prediction: 
+    - tokenizing.py: Contains methods for processesing data 
+    - helpers.py: Contains general helpers 
+    - dataanalysis.py: Contains methods for comparing positive and negative datasets
+    - neural_nets.py: Contains definitions of the neural nets used
+    - glove_module.py: Contains word embedding methods
+    - validation_and_prediction: Contains methods for running cross validation and prediction
 
 #### Pickled files
-    - stopword_100_corpus_N2_SHN_E_SN_H_HK.pkl
-    - test_best_prepro.pkl 
-    - final_document_vectors.plk
+    - stopword_100_corpus_N2_SHN_E_SN_H_HK.pkl: Stored pickle of corpus after optimal pre-processing
+    - final_document_vectors.plk: Contains the final document vectors for the corpus after optimal pre-processing
 
 #### Neural net models
-    - final_model_for_kaggle.hdf5 
+    - final_model_for_kaggle.hdf5: Contains the pre trained, complex neural net model.    
