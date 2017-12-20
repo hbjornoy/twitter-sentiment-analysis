@@ -77,15 +77,30 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
         print("Model: ", model_name)
         print("%.2f%% (+/- %.2f%%)" % (model_mean, model_std))
  
-        model_scores.append([model_mean, model_std])
+        model_scores.append(model_mean, model_std)
      
     return model_scores
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds,patience=3):
     
-    """
-    
+     """ 
+     Runs k-fold and returns model scores for the neural_nets given as a parameter. 
+     
+     Input:
+        neural_net_functions: The neural nets to run
+        global_vectors: global vectors created out the gensim-.txt files.
+        processed_corpus: The pre-processed corpus
+        total_training_tweets: (int) Number of tweets that are training tweets. Assums that the first poriton of the corpus is
+            training tweets, the second part is the unseen test set.
+        nr_pos_tweets: Number of traning tweets that are positiv
+        epochs: Max number of epochs for the neural model
+        n_folds: Number of folds in the k-fold
+        patience_: Patience for the early stopping callback used in the model fitting
+   
+    Output:
+        model_scores: A list of tuples containing mean and std for each model run 
+            thorugh the k-fold cross validation.
     """
  
     num_of_dim = global_vectors.syn0.shape[1]

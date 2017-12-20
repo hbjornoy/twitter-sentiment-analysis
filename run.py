@@ -8,7 +8,7 @@ import keras as K
 import helpers as HL
 
 # Loading pre-processed document vectors for test-set. 
-test_document_vecs =  pickle.load(open("final_document_vectors.plk", "rb" ))
+test_document_vecs =  pickle.load(open("final_document_vectors.pkl", "rb" ))
 
 #Loading neural net model
 model = K.models.load_model('final_model_for_kaggle.hdf5')
