@@ -242,7 +242,6 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
     except:
         return None
-"""
     
 def run_k_fold(models, X, Y, epochs, n_folds, patience):
     
