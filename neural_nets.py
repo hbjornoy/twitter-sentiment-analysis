@@ -97,6 +97,27 @@ def deep_HB_dropout(input_dimensions):
     return model
 
 
+def complex_model(input_dimensions):
+    """
+    This is our final neural net model that provided the best result. It is made through trial and error experimentation.
+    """
+    
+    # for reprodusable models
+    seed(1337)
+    
+    model = keras.models.Sequential()
+    model.add(Dense(500, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.4))
+    model.add(Dense(150, input_dim=input_dimensions, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.4))
+    model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+    
+    
+    
+
+    
 def dynamic_dense(input_dimensions, width, depth, dropout_rate=0.1, activation='relu', funnel=False):
     """
     This function is made to quikly generate a wide variaty of dense hidden layers.
