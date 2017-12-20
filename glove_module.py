@@ -21,8 +21,6 @@ import os
 
 import helpers as HL
 
-
-
 """
 SYNES GENERELT AT DETTE BØR DELES OPP I MANGE PENE SMÅ FUNKSJONER, ALT SOM IKKE BRUKES MÅ FJERNES 
 """
@@ -30,11 +28,13 @@ SYNES GENERELT AT DETTE BØR DELES OPP I MANGE PENE SMÅ FUNKSJONER, ALT SOM IKK
 from numpy.random import seed
 
 def create_gensim_word2vec_file(path_to_original_glove_file):
+    
     """
-    :param path_to_glove_folder: Go to Stanfords website https://nlp.stanford.edu/projects/glove/ and download their twitterdataset,
-            put it in the same folder as this function and write the path to it as the input of this function
-    :return: nothing but creates a .txt-file with the gensim object, afterwards you can delete the original glove-files
-            and keep the created gensim___.txt files and use the function load_gensim_global_vectors(path_to_global_vectors) to load them in.
+    Creates gensim_global_vectors_<dim> files from in a format readable by the gensim.models.KeyedVectors.load_word2vec_format method. 
+    
+    Input:
+        path_to_original_glove_file: Path to the glove files downloaded from the 
+   
     """
 
     for filename in os.listdir(path_to_original_glove_file):
@@ -43,16 +43,23 @@ def create_gensim_word2vec_file(path_to_original_glove_file):
             dim = get_dim_of_file(filename)
             name_of_filecreated = "gensim_global_vectors_"+ dim + "dim.txt"
 
-            # spits out a .txt-file with the vectors in gensim format
+            # Creates a .txt-file with the vectors in gensim format
             glove2word2vec(glove_input_file=filepath, word2vec_output_file="gensim_global_vectors_"+ dim + "dim.txt")
-            print(name_of_filecreated)
-            continue
-        else:
-            continue
 
+            
 def get_dim_of_file(filename):
+    
+    """
+    Helper method to find sub_string in filename representing the dimention of the glove-vector
+    
+    Input: 
+        Filename: The name of the file in which to find the dimension
+
+    Output:
+        dim: The dimension of the file
+    """
+    
     removed_27 = filename.replace("27", "")
-    # after removing 27 it should only be dim_nr. that is numerical, create regex that filter nonnumericals out
     non_decimal = re.compile(r'[^\d]+')
     dim = non_decimal.sub('', removed_27)
     return dim
@@ -60,13 +67,15 @@ def get_dim_of_file(filename):
 
 def make_glove(path_to_gensim_global_vectors):
     """
-    uses the created gensim-.txt file to create the word2vec so one can operate on
-
-    :param corpus: Corpus is the set of documents you want to train on after preprocessing
-    :param path_to_pretrained_glove:
-    :return: global vectors in the form of a list of words, with the words represented as vectors
-            with length the same as the dimensions of the space
+    Uses the created gensim-.txt file to create the word2vec so one can operate on
+    
+    Input:
+        path_to_gensim_global_vectors: Corpus is the set of documents you want to train on after preprocessing
+        
+    Output:
+        global_vectors: Returns a gensim word embedding object containing the glove-embeddings.
     """
+    
     glove_model = gensim.models.KeyedVectors.load_word2vec_format(path_to_gensim_global_vectors, binary=False)
 
     global_vectors = glove_model.wv
@@ -74,61 +83,90 @@ def make_glove(path_to_gensim_global_vectors):
 
     return global_vectors
 
+def buildDocumentVector(document, vec_dimention, word_embedding_model):
+    
+    """ 
+    Builds a vector representation of each document(tweet) of the given dimention, by finding the mean of all word vectors.
+    
+    Input:
+        document: A tweet in string form
+        vec_dimention: The dimention of vector used to represent words embeddings
+        word_embedding_model: The word embedding model used
+        
+    Output:
+        A vector representing a tweet, using the mean of the word embeddings. 
+    """
 
-def buildWordVector(tokens, size, model):
-
-    vec = np.zeros(size).reshape((1, size))
+    document_vec = np.zeros(vec_dimention).reshape((1, vec_dimention))
     count = 0
     
-    for word in tokens.split():
+    for word in document.split():
         try:
             word = word.decode('utf-8')
-            word_vec = model[word].reshape((1, size))
-            #idf_weighted_vec = word_vec * tfidf_dict[word]
-            vec += word_vec
-            count += 1
-            
-        except KeyError: # handling the case where the token is not in the corpus. useful for testing.
-            if len(word.split('_')) > 1:
-                word_vec = [0] * size
-                p_count = 0
-                
-                for part in word.split('_'):
-                    try:
-                        part_vec = model[part].reshape((1, size))
-                        if np.any(np.isinf(part_vec)):
-                            print("part that contains inf", part)
-                            print(part_vec[0:3])
-                        word_vec += part_vec
-                        p_count += 1
-                        
-                    except KeyError:
-                        continue
-                        
-                if p_count != 0:
-                    word_vec /= p_count
-                vec += word_vec
+            word_vec = word_embedding_model[word].reshape((1, vec_dimention))
+            if(word_vec): 
+                document_vec += word_vec
                 count += 1
-            else:
-                continue
+            
+        except KeyError: 
+            
+            # If the word is an n_gram, represent the n_gram as the mean of all sub_words in the n_gram. 
+            if len(word.split('_')) > 1:
+                word_vec = build_word_vec_for_n_gram(word, vec_dimention, word_embedding_model)
+                document_vec += word_vec
+                count += 1
 
+    #Finding mean of all word vectors in the document vector
     if count != 0:
-        vec /= count
-    return vec
+        document_vec /= count
+        
+    return document_vec
 
 
-def create_labels(total_training_tweets, nr_pos_tweets):
+def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
     """
-    THIS IS BAD CODE AND SHOULD BE FIXED:
-    should just get the labels directly..
-    TROR IKKE VI BRUKER DENNE?
+    Builds a vector representation for an n_gram of the given dimention, 
+           by finding the mean of all word vectors.
+    Input:
+        n_gram: An n_gram in string form
+        vec_dimention: The dimention of vector used to represent words embeddings
+        word_embedding_model: The word embedding model used
+   
+    Output:
+        A vector representing an n_gram, using the mean of the sub_word embeddings. 
     """
-    # Making labels
-    labels = np.zeros(total_training_tweets)
-    labels[0:nr_pos_tweets] = 1
-    labels[nr_pos_tweets:total_training_tweets] = 0
-    return labels
+    
+    word_vec = [0] * vec_dimention
+    partial_count = 0
+
+    for part in n_gram.split('_'):
+        try:
+            part_vec = word_embedding_model[part].reshape((1, vec_dimention))
+            word_vec += part_vec
+            partial_count += 1
+
+        except KeyError:
+            continue
+
+    if partial_count != 0:
+        word_vec /= partial_count
+        return word_vec
+        
+    return None
+
+#def create_labels(total_training_tweets, nr_pos_tweets):
+    
+#    """
+#    THIS IS BAD CODE AND SHOULD BE FIXED:
+#    should just get the labels directly..
+#    TROR IKKE VI BRUKER DENNE?
+#    """
+#    # Making labels
+#    labels = np.zeros(total_training_tweets)
+#    labels[0:nr_pos_tweets] = 1
+#    labels[nr_pos_tweets:total_training_tweets] = 0
+#    return labels
 
 
 def run_k_fold(models, X, Y, epochs, n_folds):
@@ -271,26 +309,6 @@ def train_NN(model, allX, allY, epochs=100000, split=0.8):
         print(model, history)
         return model, history
 
-def plot_history(history):
-    """should make this to plot the history of epochs and validationscore
-    maybe even the crossvalidation mean of at each epoch? smoothen out the graph :)
-    BRUKER VI DENNE? I SÅ FALL MÅ VI SKRIVE OM SEABORN I READ ME
-    - make history into dataframe that fits seaborn
-    - epoch on the x axis
-    - score on the y axix (0-1)
-    - plot val_los, val_acc, train_acc and train_loss
-    """
-    
-    import seaborn as sns
-    sb.set(style="darkgrid")
-
-    # Load the long-form example gammas dataset
-    gammas = sns.load_dataset("gammas")
-
-    # Plot the response with standard error
-    sb.tsplot(data=gammas, time="timepoint", unit="subject",
-           condition="ROI", value="BOLD signal")
-    
     
     
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
@@ -306,13 +324,15 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
     for i, doc in enumerate(train_corpus):
         if (i % 50000) == 0:
             print("tweets processed: %.0f  of total number of tweets: %.0f" % (i,len(train_corpus)))
-        vectors[i] = buildWordVector(doc, num_of_dim, global_vectors)
+        vectors[i] = buildDocumentVector(doc, num_of_dim, global_vectors)
+    
     train_document_vecs = np.concatenate(vectors)
     train_document_vecs = sklearn.preprocessing.scale(train_document_vecs)
 
     labels = create_labels(total_training_tweets, nr_pos_tweets)
  
     model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
+    
     return model_scores
 
 
@@ -352,14 +372,15 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     train_corpus = full_corpus[:total_training_tweets:]
     predict_corpus = full_corpus[total_training_tweets::]
     # Build a vector of all the words in a tweet
-    train_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
+    train_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in train_corpus])
     train_document_vecs = sk.preprocessing.scale(train_document_vecs)
+    
     labels = create_labels(total_training_tweets, nr_pos_tweets)
    
     train_document_vecs, labels = shuffle_data(train_document_vecs,labels)
     train_x, val_x, train_y, val_y = split_data(train_document_vecs, labels, split)
    
-    test_document_vecs = np.concatenate([buildWordVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
+    test_document_vecs = np.concatenate([buildDocumentVector(doc, num_of_dim, global_vectors) for doc in predict_corpus])
     test_document_vecs = sk.preprocessing.scale(test_document_vecs)
    
     model_name = neural_net.__name__
