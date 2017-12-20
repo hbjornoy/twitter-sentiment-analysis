@@ -1,33 +1,20 @@
 ### Installations and requirements
 
-In order to run `RUN.py` the following packages with their dependencies are required: 
+In order to run `RUN.py` some packages with their dependencies are required. We recommend creating a clean Anaconda Environment, and installing the following packages via Anaconda Navigator:
 
-#### Python 
-- V: 3.6.3
-
-#### Numpy 
-- V: 1.12.1
-
-#### KERAS 
-- V: 2.0.8 
-
-#### TENSORFLOW 
-- V: 1.2.1
-
-#### Scikit-learn
-- V: 0.19.1
-
-#### GENSIM  
-- V: 3.1.0
+#### Python V: 3.6.3
+#### Numpy V: 1.12.1
+#### Keras V: 2.0.8 
+#### Tensorflow V: 1.2.1
+#### Scikit-learn V: 0.19.1
+#### Gensim  V: 3.1.0
 
 In order to run the whole preprocessing and other project components, the following packages with their dependencies are required:
 
-#### NLTK
-- V: 3.2.5 
+#### NLTK V: 3.2.5 
 
-#### Enchant ( mac / linux only ) 
+#### Enchant V: 2.0.0 ( mac / linux only ) 
 - Run: pip install pyenchant
-- V: 2.0.0
 - No version for Python on 64-bit windows. Run on a OSX/Linux-machine.
 - This is only used for the enchant word-dictionary, and can be exchanged with another dictionary if running on windows is wanted.
  
