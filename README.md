@@ -1,4 +1,8 @@
-### How to produce the prediction 
+### Project Text Sentiment Classification DESCRIPTION
+
+The task of this project is to predict if a tweet message used to contain a positive :) or negative :( smiley, by considering only the remaining text! 
+
+### How to produce the prediction ( run.py )
 
 Fork or download zip of repository, and run the `run.py` from the root folder with `Python run.py`. This pruduces the file `powerpuffz_kagglescore.csv` in the root folder. 
 
@@ -31,23 +35,3 @@ All downloaded files should be placed in the root project folder.
 - Download Glove word vectors word vecs from [Standford Twitter Glove]("http://nlp.stanford.edu/data/glove.twitter.27B.zip")
 - Download and unzip in root folder the training and test dataset from [Kaggle]("https://www.kaggle.com/c/epfml17-text/data")
 
-# Project Text Sentiment Classification DESCRIPTION
-
-
-The task of this competition is to predict if a tweet message used to contain a positive :) or negative :( smiley, by considering only the remaining text.
-
-As a baseline, we here provide sample code using word embeddings to build a text classifier system.
-
-Submission system environment setup:
-
-1. The dataset is available from the Kaggle page, as linked in the PDF project description
-
- Download the provided datasets `twitter-datasets.zip`.
-
-2. To submit your solution to the online evaluation system, we require you to prepare a “.csv” file of the same structure as sampleSubmission.csv (the order of the predictions does not matter, but make sure the tweet ids and predictions match). Your submission is evaluated according to the classification error (number of misclassified tweets) of your predictions.
-
-*Working with Twitter data:* We provide a large set of training tweets, one tweet per line. All tweets in the file train pos.txt (and the train pos full.txt counterpart) used to have positive smileys, those of train neg.txt used to have a negative smiley. Additionally, the file test data.txt contains 10’000 tweets without any labels, each line numbered by the tweet-id.
-
-Your task is to predict the labels of these tweets, and upload the predictions to kaggle. Your submission file for the 10’000 tweets must be of the form `<tweet-id>`, `<prediction>`, see `sampleSubmission.csv`.
-
-Note that all tweets have already been pre-processed so that all words (tokens) are separated by a single whitespace. Also, the smileys (labels) have been removed.
