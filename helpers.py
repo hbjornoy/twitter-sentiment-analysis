@@ -3,7 +3,7 @@ import numpy as np
 import glove_module as GV
 
 def create_corpus(inputfiles):
-    """
+    """ Given files, it returns the corpus.
     Input: 
         iputfiles: A list of filenames: ["filename1.txt", "filename2.txt"]. If only one filename, it must be given as
         ["filename1.txt"] and not "filename1.txt".
@@ -22,6 +22,7 @@ def create_corpus(inputfiles):
         file_lengths.append(new_lenght-sum_so_far)
                     
     return corpus, file_lengths
+
 
 def create_labels(nr_pos_lines,nr_neg_lines,kaggle=False):
     """
@@ -44,7 +45,7 @@ def create_labels(nr_pos_lines,nr_neg_lines,kaggle=False):
 
 def add_n_grams(line, n_gram):
     
-    """
+    """ Help function to creating_n_grams_corpus. Adds the n-grams to each tweet. 
     Input: 
         line: A tweet
         n_gram: a number, the number of words that are to be grouped together
@@ -115,8 +116,9 @@ def add_n_grams(line, n_gram):
 
     return b' '.join(n_grams)
 
+
 def creating_n_grams_corpus(n_gram, corpus):
-    """
+    """ Returns a n_gram corpus
     Input: 
         n_gram: A number, HJELP desired number of maximum number of words grouped together?
         corpus: A corpus
@@ -138,8 +140,9 @@ def creating_n_grams_corpus(n_gram, corpus):
     
     return new_corpus
 
+
 def create_csv_submission(ids, y_pred, name):
-    """
+    """ Creates csv file
     TAKEN FROM ML COURSE: https://github.com/epfml/ML_course/blob/master/projects/project1/scripts/proj1_helpers.py
     Creates an output file in csv format for submission to kaggle
     Arguments: ids (event ids associated with each prediction)
@@ -156,7 +159,7 @@ def create_csv_submission(ids, y_pred, name):
             
 def get_corpus(full=False, test=False, inputfiles=None):
     
-    """
+    """ Creating corpus and associated constants.
     Input: 
         full: if true, the retunred corpus contains all 2 510 000 tweets
         test: if true, the returned corpus contains the 210 000 test- tweets. 
@@ -198,10 +201,11 @@ def get_corpus(full=False, test=False, inputfiles=None):
         
     return full_corpus, nr_pos_tweets, nr_neg_tweets, total_training_tweets
 
+
 def get_global_vectors(dimension): 
-    """
+    """ Returns pre-trained Glove-Embeddings, given dimension. 
     Input: 
-        dimension: The desired dimension in the returned global vectors. can be 50,100 or 200. 
+        dimension: The desired dimension in the returned global vectors. Can be 50,100 or 200. 
     
     Output: 
         global_vectors: The pre-trained global vectors,with desired dimension, on the gensim object form. 
