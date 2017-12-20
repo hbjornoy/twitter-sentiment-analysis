@@ -132,22 +132,6 @@ def run_k_fold(models, X, Y, epochs, n_folds):
     sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
     K.set_session(sess)
     
-    seed(1337)
-    
-    s = np.arange(X.shape[0])
-    
-    X = X[s]
-    Y = Y[s]
-    
-    #unseen_x = X[:10000]
-    #unseen_y = Y[:10000]
-
-    x_test = X[:40000]
-    y_test = Y[:40000]
-   
-    X = X[40000:]
-    Y = Y[40000:] 
-    
     model_scores = []
     for neural_model in models:
  
@@ -155,7 +139,6 @@ def run_k_fold(models, X, Y, epochs, n_folds):
        
         input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
-        start = time.time()
 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds)
         cv_scores = []
@@ -171,7 +154,7 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             
             model = neural_model(input_dimensions)
             
-            history = model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(x_test, y_test))
+            model.fit(X[train], Y[train], epochs=epochs, batch_size=1024, verbose=1, callbacks=[early_stopping, model_checkpoint], validation_data=(x_test, y_test))
             
             model = load_model('best_neural_model_save.hdf5')
             
@@ -182,27 +165,10 @@ def run_k_fold(models, X, Y, epochs, n_folds):
             pred = model.predict(X[test])
             
             cv_scores.append(score)
- 
-            # To analyze if it is unbalanced classifying
-            labels = Y[test]
-            pos_right = 0
-            neg_right = 0
-            for i, label in enumerate(labels):
-                if label == 1 and pred[i] >=0.5:
-                    pos_right += 1
-                elif label == 0 and pred[i] < 0.5:
-                    neg_right += 1
-            ratio_of_pos_guesses.append(np.mean(np.round(np.array(pred)).astype(int)))
-            pos_scores.append((pos_right / (len(labels) * 0.5))*100)
-            neg_scores.append((neg_right / (len(labels) * 0.5))*100)
+
  
         print("Model: ", model_name)
-        print(history)
-        print(cv_scores)
         print("%.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
-        print("Negative sentiment: %.2f%%  Positive sentiment: %.2f%%" % (np.mean(neg_scores), np.mean(pos_scores)))
-        print("Percentage of positive classifications (should be 50%ish):", np.mean(ratio_of_pos_guesses)*100)
-        print("Time taken: ", (time.time() - start) / 60, "\n")
  
         model_scores.append((np.mean(cv_scores), np.std(cv_scores)))
      
