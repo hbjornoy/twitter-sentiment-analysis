@@ -1,4 +1,4 @@
-1. Thomas kjører 3-fold CV med final neural net på det corpuset Hedda har pushet, setter resultatet inn i rapporten
+1. Hedaa kjører 3-fold CV med final neural net på det corpuset Hedda har pushet, setter resultatet inn i rapporten
 2. Thomas og Håvard leser igjennom rapporten, gjør eventuelle endringer, men holder seg innen 4 sider. 
 3. Thomas og Håvard rydder opp i kode som ikke er ryddet i
 4. Thomas skriver ferdig readme
@@ -47,24 +47,21 @@ STATUS:
 ANSVARLIG: X
 
 NAVN:  glove_module.py
-STATUS: må ryddes, må fjerne alle imports som ikke brues, må fjerne alt som ikke brukes, fikse det som printes ut så det er pent og fornuftig, gjøre at patience blir et input ettersom vi varierer det med 3 og 10, 
-ANSVARLIG: X
+STATUS: Hedda tester
+ANSVARLIG: Thomas 
 
 NAVN:  noe som viser ting fra hvordan vi fant det beste neural networket
 STATUS: 
 ANSVARLIG: Håvard 
 
 NAVN:  readme
-STATUS: 
+STATUS: Nesten 
 ANSVARLIG: Thomas
 
 NAVN:  run.py
-STATUS: ikke begynt på! regner med at det er ok å loade pickle i denne? kanskje også loade modell? vet ikke helt hva som er greit å ikke jeg.. 
-ANSVARLIG: Thomas (?) 
+STATUS: Ferdig
+ANSVARLIG: Thomas
 
-NAVN:  (?) ferdig modell 
-STATUS: den finnes (?) 
-ANSVARLIG: Thomas (?)
 
 convention: 
 I starten av hver funskjon skriver vi: 
