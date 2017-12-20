@@ -84,7 +84,7 @@ def create_glove_model(path_to_gensim_global_vectors):
 
     return global_vectors
 
-"""
+
 def buildDocumentVector(tokens, size, model):
 
     vec = np.zeros(size).reshape((1, size))
@@ -126,6 +126,7 @@ def buildDocumentVector(tokens, size, model):
         vec /= count
     return vec
 
+"""
 
 def buildDocumentVector(tokens, size, model):
 
@@ -167,11 +168,8 @@ def buildDocumentVector(tokens, size, model):
         vec /= count
     return vec
 
-""" 
-
 def buildDocumentVector(document, vec_dimention, word_embedding_model):
     
-    """
     Builds a vector representation of each document(tweet) of the given dimention, by finding the mean of all word vectors.
     
     Input:
@@ -181,7 +179,6 @@ def buildDocumentVector(document, vec_dimention, word_embedding_model):
         
     Output:
         A vector representing a tweet, using the mean of the word embeddings. 
-    """
     
     document_vec = np.zeros(vec_dimention).reshape((1, vec_dimention))
     count = 0
@@ -210,7 +207,6 @@ def buildDocumentVector(document, vec_dimention, word_embedding_model):
 
 def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
-    """
     Builds a vector representation for an n_gram of the given dimention, 
            by finding the mean of all word vectors.
     Input:
@@ -220,7 +216,6 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
    
     Output:
         A vector representing an n_gram, using the mean of the sub_word embeddings. 
-    """
     
     word_vec = [0] * vec_dimention
     partial_count = 0
@@ -242,6 +237,8 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
     
     except:
         return None
+    
+"""    
     
 def run_k_fold(models, X, Y, epochs, n_folds, patience):
     
