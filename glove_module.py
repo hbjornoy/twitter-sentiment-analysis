@@ -22,6 +22,12 @@ import seaborn as sb
 
 import helpers as HL
 
+
+
+"""
+SYNES GENERELT AT DETTE BØR DELES OPP I MANGE PENE SMÅ FUNKSJONER, ALT SOM IKKE BRUKES MÅ FJERNES 
+"""
+
 from numpy.random import seed
 
 
