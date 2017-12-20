@@ -7,13 +7,13 @@ import gensim
 #import time
 import sklearn as sk
 import sklearn.preprocessing
-#from sklearn import model_selection
+from sklearn import model_selection
 import numpy as np
 import keras
 #import neural_nets as NN
-#import tensorflow as tf
+import tensorflow as tf
 #import random as rn
-#from keras.models import load_model
+from keras.models import load_model
 #import re
 #import os
 
@@ -238,7 +238,7 @@ def build_word_vec_for_n_gram(n_gram, vec_dimention, word_embedding_model):
             word_vec /= partial_count
             return word_vec
 
-        return None
+        return word_vec
     
     except:
         return None
@@ -270,9 +270,10 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
     for neural_model in models:
  
         model_name = neural_model.__name__
+        input_dimensions = X.shape[1]
         model = neural_model(input_dimensions)
 
-        input_dimensions = X.shape[1]
+        
 
         kfold = sk.model_selection.StratifiedKFold(n_splits=n_folds)
         
@@ -281,10 +282,10 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
         for train, test in kfold.split(X, Y):
             
             # Defining callbacks to be used under fitting process
-            early_stopping_callback = early_stopping_callback(monitor='val_loss', patience=patience_, verbose=1)
+            early_stopping= early_stopping_callback(patience_=patience, verbose_=1)
 
 
-            model_checkpoint_callback = model_checkpoint_callback("best_neural_model_save.hdf5", verbose=1)
+            model_checkpoint = model_checkpoint_callback("best_neural_model_save.hdf5", verbose_=1)
 
             
             model = neural_model(input_dimensions)
@@ -295,8 +296,8 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
                 epochs=epochs, 
                 batch_size=1024, 
                 verbose=1, 
-                callbacks=[early_stopping_callback, model_checkpoint_callback], 
-                validation_data=(x_test, y_test)
+                callbacks=[early_stopping, model_checkpoint], 
+                validation_data=(X[test], Y[test])
             )
             
             #Load best model stored during fitting of model
@@ -437,7 +438,7 @@ def train_NN(model, allX, allY, patience_, epochs=100000, split=0.8):
 
     
     
-def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds):
+def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds,patience=3):
  
     num_of_dim = global_vectors.syn0.shape[1]
  
@@ -455,9 +456,9 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
     train_document_vecs = np.concatenate(vectors)
     train_document_vecs = sklearn.preprocessing.scale(train_document_vecs)
 
-    labels = create_labels(total_training_tweets, nr_pos_tweets)
+    labels = HL.create_labels(nr_pos_tweets, nr_pos_tweets)
  
-    model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds)
+    model_scores= run_k_fold(neural_nets_functions, train_document_vecs, labels, epochs, n_folds,patience)
     
     return model_scores
 
