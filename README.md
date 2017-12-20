@@ -1,6 +1,10 @@
+### How to produce the prediction 
+
+Fork or download zip of repository, and run the `run.py` from the root folder with `Python run.py`. This pruduces the file `powerpuffz_kagglescore.csv` in the root folder. 
+
 ### Installations and requirements
 
-In order to run `RUN.py` some packages with their dependencies are required. We recommend creating a clean Anaconda Environment, and installing the following packages via Anaconda Navigator:
+In order to run `run.py` some packages with their dependencies are required. We recommend creating a clean Anaconda Environment, and installing the following packages via Anaconda Navigator:
 
 - Python V: 3.6.3
 - Numpy V: 1.12.1
@@ -23,18 +27,12 @@ In order to run the whole preprocessing and other project components, the follow
   - NB: Will take some time on first import to download "Word statistics files". 
 
 
-### Downloadable files needed.
+### Files downloaded and used in this project
 
 All downloaded files should be placed in the root project folder.
 
 - Download Glove word vectors word vecs from [Standford Twitter Glove]("http://nlp.stanford.edu/data/glove.twitter.27B.zip")
-- Download training and test dataset from [Kaggle]("https://www.kaggle.com/c/epfml17-text/data")
-
-
-### Explain RUN file 
-
-Fork or download zip of repository, and run the `run.py` from terminal with `Python run.py`. This pruduces the file `powerpuffz_kagglescore.csv` in the root folder. 
-
+- Download and unzip in root folder the training and test dataset from [Kaggle]("https://www.kaggle.com/c/epfml17-text/data")
 
 
 # Project Text Sentiment Classification DESCRIPTION
