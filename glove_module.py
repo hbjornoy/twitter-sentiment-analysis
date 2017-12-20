@@ -554,5 +554,3 @@ def get_prediction(neural_net, global_vectors, full_corpus, total_training_tweet
     HL.create_csv_submission(ids, prediction,kaggle_name)
  
     return prediction
-
-
