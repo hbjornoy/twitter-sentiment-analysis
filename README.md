@@ -35,3 +35,28 @@ All downloaded files should be placed in the root project folder.
 - Download Glove word vectors word vecs from [Standford Twitter Glove]("http://nlp.stanford.edu/data/glove.twitter.27B.zip")
 - Download and unzip in root folder the training and test dataset from [Kaggle]("https://www.kaggle.com/c/epfml17-text/data")
 
+
+### Files included in this repository 
+
+#### Notebooks
+    - Preprocessing_on_test.ipynb: This notebook is used to determine best preprosessing.   
+    - Data_analysis.ipynb: This notebook contains preliminary data analysis.  
+    - Kaggle_submissions.ipynb: This notebook contains code needed to make predictions for the 
+      unseen test set from scratch, or from pickles.    
+
+#### Python files
+    - run.py: Run this file to reproduce the predictions, as explained above.     
+    - tokenizing.py
+    - helpers.py
+    - dataanalysis.py
+    - neural_nets.py
+    - glove_module.py
+    - validation_and_prediction: 
+
+#### Pickled files
+    - stopword_100_corpus_N2_SHN_E_SN_H_HK.pkl
+    - test_best_prepro.pkl 
+    - final_document_vectors.plk
+
+#### Neural net models
+    - final_model_for_kaggle.hdf5 

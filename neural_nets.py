@@ -12,6 +12,13 @@ from numpy.random import seed
 
 
 def basic_model_adam(input_dimensions):
+    """ Returns a basic/simple neural network model, used as a baseline. 
+    Input: 
+        input_dimensions: The dimension of the global vectors. 
+    
+    Output: 
+        model: A Keras sequencial neural net model. (referred to as basic/ simple neural net in report). 
+    """
     
     """
     """
@@ -26,8 +33,13 @@ def basic_model_adam(input_dimensions):
 
 
 def complex_model(input_dimensions):
-    """
-    This is our final neural net model that provided the best result. It is made through trial and error experimentation.
+    """ Returns the final/complex neural network model, used for final results.  
+        It is designed by trial and error experimentation.
+    Input: 
+        input_dimensions: The dimension of the global vectors. 
+    
+    Output: 
+        model: A Keras sequencial neural net model. (referred to as final/complex neural net in report). 
     """
     # for reprodusable models
     seed(1337)
@@ -45,8 +57,19 @@ def complex_model(input_dimensions):
 def dynamic_dense(input_dimensions, width, depth, dropout_rate=0.1, activation='relu', funnel=False):
     """
     This function is made to quikly generate a wide variaty of dense hidden layers.
-    It is used in the trial and error fase of figuring out the best parameters for our final model which is named XXXX
-    not compatible with current crossvalidation
+    It is used in the trial and error fase of figuring out the best parameters for our final model (complex_model)
+    Output model is not compatible with current crossvalidation
+    
+    Inputs: 
+        input_dimensions: The dimension of the global vectors.
+        width: Number of nodes in hidden layers.
+        depth: Number og hidden layers.
+        dropout_rate: Desired dropout rate. Default 0.1. 
+        activation function: Activation function for hidden layers, default 'relu'. 
+        funnel: Desired funnel rate. Default False. 
+        
+    Output: 
+        model: A Keras sequencial neural net model. 
     """
     # for reprodusable models
     seed(1337)

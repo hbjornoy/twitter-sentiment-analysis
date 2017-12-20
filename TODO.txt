@@ -16,7 +16,7 @@ STATUS: skal kjøres i natt for å leveres med resultater
 ANSVARLIG: Hedda
 
 NAVN:  kaggle_submissions
-STATUS:  sørge for at navn på final neural net er riktig
+STATUS: ok
 ANSVARLIG: X
 
 NAVN:  datanalysis.py
@@ -40,16 +40,13 @@ STATUS: ferdig
 ANSVARLIG: Hedda
 
 NAVN:  neural_nets.py
-STATUS: 
+STATUS: ferdig
 ANSVARLIG: X
 
 NAVN:  glove_module.py
 STATUS: Hedda tester
 ANSVARLIG: Thomas 
 
-NAVN:  noe som viser ting fra hvordan vi fant det beste neural networket
-STATUS: 
-ANSVARLIG: Håvard 
 
 NAVN:  readme
 STATUS: Nesten 
