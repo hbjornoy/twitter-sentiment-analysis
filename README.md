@@ -41,7 +41,8 @@ All downloaded files should be placed in the root project folder.
 #### Notebooks
     - Preprocessing_on_test.ipynb: This notebook is used to determine best preprosessing.   
     - Data_analysis.ipynb: This notebook contains preliminary data analysis.  
-    - Kaggle_submissions.ipynb: This notebook contains code needed to make predictions for the unseen test set from scratch, or from pickles.    
+    - Kaggle_submissions.ipynb: This notebook contains code needed to make predictions for the 
+      unseen test set from scratch, or from pickles.    
 
 #### Python files
 - run.py:__ Run this file to reproduce the predictions, as explained above.     
