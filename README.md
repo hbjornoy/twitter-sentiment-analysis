@@ -1,39 +1,50 @@
-## Installations 
+### Installations and requirements
 
-# Gensim for windows
-Download gensim through pip ( python package manager ), make sure to run with administrator privleges. 
-`pip install --upgrade gensim`
-`conda install -c conda-forge keras tensorflow` 
+In order to run `RUN.py` the following packages with their dependencies are required: 
 
-pip install ekphrasis
-pip install pyenchant
+#### Python 
+- V: 3.6.3
 
-# GENSIM  
-- V: 
+#### Numpy 
+- V: 1.12.1
 
-# KERAS 
-- V:
+#### KERAS 
+- V: 2.0.8 
 
-# TENSORFLOW 
+#### TENSORFLOW 
 - V: 1.2.1
 
-# SKLEARN 
+#### Scikit-learn
+- V: 0.19.1
 
-# NLTK
+#### GENSIM  
+- V: 3.1.0
 
-# Enchant 
-- Only used for dictionary, NB: difficult to install on windows. 
+In order to run the whole preprocessing and other project components, the following packages with their dependencies are required:
 
-# Ekphrasis
+#### NLTK
+- V: 3.2.5 
+
+#### Enchant ( mac / linux only ) 
+- Run: pip install pyenchant
+- V: 2.0.0
+- No version for Python on 64-bit windows. Run on a OSX/Linux-machine.
+- This is only used for the enchant word-dictionary, and can be exchanged with another dictionary if running on windows is wanted.
+ 
+#### Ekphrasis
+- pip install ekphrasis. 
+- V: 0.3.6 
+- Will take some time on first import to download "Word statistics files". 
 
 
-## Downloading files 
+### Downloadable files needed
 
-# Downloading gensim word vecs?  
+#### Gensim word vectors 
+
+- Downloading gensim word vecs here: [JKDIEOJADIWJPADJOP]("www.bt.no")
+
 
 ## Explain RUN file 
-
-
 
 #PLAN: 
 - Make new anaconda environment and find needed packages 
