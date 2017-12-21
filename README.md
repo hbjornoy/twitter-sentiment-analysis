@@ -30,9 +30,10 @@ In order to run the whole preprocessing and other project components, the follow
   
 ### Files downloaded and used in this project
 
-All downloaded files should be placed in the root project folder.
+All downloaded files should be extracted and placed in the root project folder.
 
 - Download Glove word vectors word vecs from [Standford Twitter Glove]("http://nlp.stanford.edu/data/glove.twitter.27B.zip")
+		- In order to create the gensim_global_vectors_Xdim.txt, the method `create_gensim_word2vec_file` in `glove_module.py` must be run. 
 - Download and unzip in root folder the training and test dataset from [Kaggle]("https://www.kaggle.com/c/epfml17-text/data")
 
 
