@@ -77,14 +77,16 @@ def run_k_fold(models, X, Y, epochs, n_folds, patience):
         print("Model: ", model_name)
         print("%.2f%% (+/- %.2f%%)" % (model_mean, model_std))
  
-        model_scores.append(model_mean, model_std)
+        model_scores.append([model_mean, model_std])
      
     return model_scores
 
 
 def classify_with_neural_networks(neural_nets_functions, global_vectors, processed_corpus, total_training_tweets, nr_pos_tweets, epochs, n_folds,patience=3):
+    num_of_dim = global_vectors.syn0.shape[1]
+   
     
-     """ 
+    """ 
      Runs k-fold and returns model scores for the neural_nets given as a parameter. 
      
      Input:
@@ -102,8 +104,7 @@ def classify_with_neural_networks(neural_nets_functions, global_vectors, process
         model_scores: A list of tuples containing mean and std for each model run 
             thorugh the k-fold cross validation.
     """
- 
-    num_of_dim = global_vectors.syn0.shape[1]
+    num_of_dim = global_vectors.syn0.shape[1]    
  
     # seperate traindata and testdata
     train_corpus = processed_corpus[:total_training_tweets:]
